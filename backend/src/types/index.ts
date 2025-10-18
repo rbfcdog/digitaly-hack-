@@ -14,5 +14,4 @@ export interface ClientInfo {
   status_jornada: string;
   alerta_atraso: boolean;
   atraso_etapa: string;
-  notas_clinicas: string;
 }

@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { agentService } from "../services/agent.service.js";
+import { supabaseService } from "../services/supabase.service.js";
 
 export class ActionsController {
   static async foo(req: Request, res: Response) {
@@ -28,6 +29,17 @@ export class ActionsController {
 
     } catch (error: any) {
       console.error("Erro no agente:", error.message);
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async queryClientInfo(req: Request, res: Response) {
+    try {
+      const { clientId } = req.body;
+      const clientInfo = await supabaseService.query_client_info(clientId);
+      res.status(200).json(clientInfo);
+    } catch (error: any) {
+      console.error("Erro ao consultar informações do cliente:", error.message);
       res.status(500).json({ error: error.message });
     }
   }
