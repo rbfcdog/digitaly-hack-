@@ -15,3 +15,11 @@ export interface ClientInfo {
   alerta_atraso: boolean;
   atraso_etapa: string;
 }
+
+// Tipo retornado pelo agente
+export interface PatientAnalysis {
+  patient_id: string;
+  sintomas: string[];
+  observacoes: string;
+  sugestao_plano: string;
+}
