@@ -20,6 +20,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "@supabase/postgrest-js": "^2.75.1",
     "@supabase/supabase-js": "^2.75.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
