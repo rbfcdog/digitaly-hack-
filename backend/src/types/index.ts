@@ -14,5 +14,12 @@ export interface ClientInfo {
   status_jornada: string;
   alerta_atraso: boolean;
   atraso_etapa: string;
-  notas_clinicas: string;
+}
+
+// Tipo retornado pelo agente
+export interface PatientAnalysis {
+  patient_id: string;
+  sintomas: string[];
+  observacoes: string;
+  sugestao_plano: string;
 }
