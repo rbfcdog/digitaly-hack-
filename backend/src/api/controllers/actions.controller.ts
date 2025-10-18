@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { agentService } from "../../services/agent.service.js";
+import { agentService } from "../services/agent.service.js";
 
 export class ActionsController {
   static async foo(req: Request, res: Response) {
