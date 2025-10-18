@@ -15,3 +15,4 @@ export class supabaseService {
         }
         return data;
     }
+    
