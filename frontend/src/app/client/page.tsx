@@ -1,10 +1,14 @@
-import Link from "next/link";
+"use client";
 
-export default function AboutPage() {
+import ChatBox from "@/components/ChatBox/ChatBox";
+
+export default function Page() {
   return (
-    <div>
-      <h1>About Us</h1>
-      <Link href="/">Go Home</Link>
+    <div className="flex justify-center items-center h-screen bg-gray-100">
+      <ChatBox
+        title="Atendimento Virtual"
+        style={{ width: "500px", height: "500px" }}
+      />
     </div>
   );
 }
