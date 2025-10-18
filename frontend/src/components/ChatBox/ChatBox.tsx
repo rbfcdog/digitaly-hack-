@@ -29,7 +29,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
 
     const userMessage: Message = {
       sender: "user",
-      name: "Você",
+      name: "Oruam",
       text: input,
     };
 
@@ -42,7 +42,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
         ...prev,
         {
           sender: "bot",
-          name: "Assistente",
+          name: "Médico",
           text: "Essa é uma resposta automática :)",
         },
       ]);
@@ -64,64 +64,74 @@ const ChatBox: React.FC<ChatBoxProps> = ({
 
   return (
     <div
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    border: "1px solid #ddd",
+    borderRadius: "10px",
+    padding: "1rem",
+    backgroundColor: "#fafafa",
+    height: "100%", // ocupa toda a altura do container pai
+    ...style,
+  }}
+>
+  {title && (
+    <h2 style={{ color: "black", fontWeight: 600, marginBottom: "0.5rem" }}>
+      {title}
+    </h2>
+  )}
+
+  {/* Área das mensagens */}
+  <div
+    style={{
+      flex: 1,          // ocupa todo o espaço disponível vertical
+      overflowY: "auto",
+      padding: "0.5rem",
+      backgroundColor: "#fff",
+      borderRadius: "8px",
+    }}
+  >
+    {messages.map((msg, idx) => (
+      <ChatMessage
+        key={idx}
+        sender={msg.sender}
+        name={msg.name}
+        text={msg.text}
+      />
+    ))}
+    <div ref={messagesEndRef} />
+  </div>
+
+  {/* Campo de texto + botão */}
+  <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
+    <input
+      type="text"
+      value={input}
+      onChange={(e) => setInput(e.target.value)}
+      onKeyDown={handleKeyDown}
+      placeholder={placeholder}
       style={{
-        display: "flex",
-        flexDirection: "column",
-        border: "1px solid #ddd",
-        borderRadius: "10px",
-        padding: "1rem",
-        backgroundColor: "#fafafa",
-        ...style,
+        flex: 1,
+        border: "1px solid #ccc",
+        borderRadius: "5px",
+        padding: "0.5rem",
+        color: "black",
+      }}
+    />
+    <button
+      onClick={sendMessage}
+      style={{
+        backgroundColor: "#3b82f6",
+        color: "white",
+        borderRadius: "5px",
+        padding: "0.5rem 1rem",
       }}
     >
-      {title && <h2 className="text-lg font-semibold mb-2"
-                    style={{color:"black"}}>{title}</h2>}
+      Enviar
+    </button>
+  </div>
+</div>
 
-      {/* Área das mensagens */}
-      <div
-        style={{
-          flex: 1,
-          overflowY: "auto",
-          marginBottom: "0.5rem",
-          padding: "0.5rem",
-          backgroundColor: "#fff",
-          borderRadius: "8px",
-          minHeight: "200px",
-          maxHeight: "400px",
-        }}
-      >
-        {messages.map((msg, idx) => (
-          <ChatMessage
-            key={idx}
-            sender={msg.sender}
-            name={msg.name}
-            text={msg.text}
-          />
-        ))}
-
-        {/* 🔹 marcador invisível para rolar até o fim */}
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Campo de texto + botão */}
-      <div style={{ display: "flex", gap: "0.5rem" }}>
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none"
-          style={{ color: "black" }}
-        />
-        <button
-          onClick={sendMessage}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          Enviar
-        </button>
-      </div>
-    </div>
   );
 };
 
