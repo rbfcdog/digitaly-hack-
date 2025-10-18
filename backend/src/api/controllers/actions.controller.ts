@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
+import crypto from "crypto";
 import { agentService } from "../services/agent.service.js";
+import { SessionsManager } from '../services/sessions.service.js';
 import { supabaseService } from "../services/supabase.service.js";
 
 export class ActionsController {
@@ -15,22 +17,22 @@ export class ActionsController {
     }
   }
 
+static createSession(req: Request, res: Response) {
+    const { patient_id } = req.body;
+    if (!patient_id) return res.status(400).json({ error: "patient_id é obrigatório" });
 
-  static async testAgent(req: Request, res: Response) {
-    try {
-      const { patient_id, messages } = req.body;
+    // Cria hash única para a sessão
+    const hash = crypto.randomBytes(8).toString("hex");
+    const sessionUrl = `${process.env.SERVER_URL || "http://localhost:3001"}/${hash}`;
 
-      if (!patient_id || !messages) {
-        return res.status(400).json({ error: "Parâmetros obrigatórios: patient_id e messages" });
-      }
+    // Salva associação hash -> patient_id (em memória por enquanto)
+    SessionsManager.addSession(hash, patient_id);
 
-      const result = await agentService.analyzePatientConversation(patient_id, messages);
-      res.status(200).json(result);
-
-    } catch (error: any) {
-      console.error("Erro no agente:", error.message);
-      res.status(500).json({ error: error.message });
-    }
+    return res.status(200).json({
+      message: "Sessão criada com sucesso",
+      url: sessionUrl,
+      hash
+    });
   }
 
   static async queryClientInfo(req: Request, res: Response) {
