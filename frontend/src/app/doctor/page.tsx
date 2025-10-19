@@ -36,6 +36,8 @@ export default function MedicoPage() {
 
 
   const [allPatientsInfo, setAllPatientsInfo] = useState<ClientInfo[] | null>(null);
+  const [selectedGender, setSelectedGender] = useState<"all" | "M" | "F">("all");
+
 
   const fetchPatientInfo = async () => {
     const info = await queryClientInfo(patient_id!);
@@ -130,14 +132,20 @@ export default function MedicoPage() {
   }, [patientInfo]);
 
 
-  // 🧮 Função para gerar dados de gráfico a partir do allPatientsInfo
+// 🧮 Função para gerar dados de gráfico a partir do allPatientsInfo
+// agora respeita o filtro de sexo (selectedGender)
 const generateChartData = (field: keyof ClientInfo) => {
   if (!allPatientsInfo) return [];
   const counts: Record<string, number> = {};
-  allPatientsInfo.forEach(p => {
-    const key = p[field] || "Desconhecido";
-    counts[key] = (counts[key] || 0) + 1;
-  });
+  allPatientsInfo
+    .filter(p => {
+      if (selectedGender === "all") return true;
+      return (p.sexo || "").toUpperCase() === selectedGender;
+    })
+    .forEach(p => {
+      const key = (p[field] as any) || "Desconhecido";
+      counts[key] = (counts[key] || 0) + 1;
+    });
   return Object.entries(counts).map(([name, value]) => ({ name, value }));
 };
 
@@ -145,6 +153,32 @@ const generateChartData = (field: keyof ClientInfo) => {
 const estadiamentoData = generateChartData("estadiamento");
 const tipoCancerData = generateChartData("tipo_cancer");
 const statusJornadaData = generateChartData("status_jornada");
+
+const separateAgeGroups = (field: keyof ClientInfo) => {
+  if (!allPatientsInfo) return [];
+  const ageGroups: Record<string, number> = {
+    "0-18": 0,
+    "19-35": 0,
+    "36-50": 0,
+    "51-65": 0,
+    "66+": 0,
+  };
+  allPatientsInfo
+    .filter(p => (selectedGender === "all" ? true : (p.sexo || "").toUpperCase() === selectedGender))
+    .forEach(p => {
+      const age = p[field] as number;
+      if (age <= 18) ageGroups["0-18"] += 1;
+      else if (age <= 35) ageGroups["19-35"] += 1;
+      else if (age <= 50) ageGroups["36-50"] += 1;
+      else if (age <= 65) ageGroups["51-65"] += 1;
+      else ageGroups["66+"] += 1;
+    });
+  return Object.entries(ageGroups).map(([name, value]) => ({ name, value }));
+}
+
+const patientsAge = separateAgeGroups("idade");
+
+
 
   return (
     <div
@@ -163,6 +197,10 @@ const statusJornadaData = generateChartData("status_jornada");
         estadiamentoData={estadiamentoData}
         tipoCancerData={tipoCancerData}
         statusJornadaData={statusJornadaData}
+        patientsAge={patientsAge}
+        selectedGender={selectedGender}
+        setSelectedGender={setSelectedGender}
+        patients={allPatientsInfo ?? undefined}
       />
 
       {/* Notificação de boas-vindas */}
@@ -246,7 +284,7 @@ const statusJornadaData = generateChartData("status_jornada");
             width: "50%",
             display: "flex",
             flexDirection: "column",
-            height: "100%",
+            height: "98%",
           }}
         >
           <ChatBox
