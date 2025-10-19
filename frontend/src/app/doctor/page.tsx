@@ -4,7 +4,8 @@ import ChatBox from "@/components/ChatBox/ChatBox";
 import InfoBox from "@/components/InfoBox/InfoBox";
 import HeaderBar from "@/components/HeaderBar/Headerbar";
 import { useSearchParams } from "next/navigation";
-import React from "react";
+import Notification from "@/components/notification/notification";
+import React, { useState, useEffect } from "react";
 
 export default function MedicoPage() {
   const headerHeight = 60;
@@ -13,6 +14,14 @@ export default function MedicoPage() {
   const session_id = searchParams.get("session") || "";
   const role = "medic";
   const patient_id = searchParams.get("id") || undefined;
+
+  const [notifMessage, setNotifMessage] = useState<string | null>(null);
+
+  
+    // Mostrar a notificação sempre que recarregar
+    useEffect(() => {
+      setNotifMessage("Bem-vindo ao atendimento virtual!");
+    }, []);
 
   return (
     <div
@@ -25,6 +34,14 @@ export default function MedicoPage() {
     >
       {/* HEADER */}
       <HeaderBar height={headerHeight} />
+    
+      {/* NOTIFICAÇÃO */}
+      <Notification
+        message={notifMessage || ""}
+        visible={!!notifMessage}
+        duration={10000}
+        onClose={() => setNotifMessage(null)}
+      />
 
       {/* CONTEÚDO PRINCIPAL */}
       <div
