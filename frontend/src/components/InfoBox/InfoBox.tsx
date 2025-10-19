@@ -1,16 +1,20 @@
 // src/components/InfoBox.tsx
-import React from "react";
+import React, { useState } from "react";
 
 interface InfoBoxProps {
   title: string;
   content: string | null;
   style?: React.CSSProperties;
-  loading?: boolean; // nova prop
+  loading?: boolean;
 }
 
 const InfoBox: React.FC<InfoBoxProps> = ({ title, content, style, loading = false }) => {
+  const [hovered, setHovered] = useState(false);
+
   return (
     <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       style={{
         display: "flex",
         flexDirection: "column",
@@ -21,6 +25,9 @@ const InfoBox: React.FC<InfoBoxProps> = ({ title, content, style, loading = fals
         marginBottom: "1rem",
         overflowY: "auto",
         maxHeight: "100%",
+        transition: "transform 0.3s ease, box-shadow 0.3s ease",
+        transform: hovered ? "scale(1.03)" : "scale(1)",
+        boxShadow: hovered ? "0 8px 20px rgba(0,0,0,0.15)" : "0 4px 12px rgba(0,0,0,0.08)",
         ...style,
       }}
     >
@@ -29,6 +36,7 @@ const InfoBox: React.FC<InfoBoxProps> = ({ title, content, style, loading = fals
           fontWeight: 600,
           marginBottom: "0.5rem",
           color: "#000",
+          wordBreak: "break-word",
         }}
       >
         {title}
@@ -37,17 +45,18 @@ const InfoBox: React.FC<InfoBoxProps> = ({ title, content, style, loading = fals
         style={{
           color: "#333",
           whiteSpace: "pre-wrap",
-          display: "flex",
-          alignItems: "center",
-          gap: "0.5rem",
+          display: "block", // mudou de flex para block
           minHeight: "2em",
+          wordBreak: "break-word", // quebra palavras longas
+          overflowWrap: "break-word",
+          lineHeight: 1.4,
         }}
       >
         {loading ? (
-          <>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
             <div className="spinner" />
             <span>Chamando o agente...</span>
-          </>
+          </div>
         ) : (
           content
         )}
