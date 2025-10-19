@@ -29,8 +29,6 @@ export default function MedicoPage() {
   const [showDashboard, setShowDashboard] = useState(false); 
 
 
-
-
   const [patientInfo, setPatientInfo] = useState<ClientInfo | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -221,9 +219,10 @@ const statusJornadaData = generateChartData("status_jornada");
             title="Sintomas"
             content={
               analysisResult?.sintomas?.length
-                ? analysisResult.sintomas
-                    .map((s) => `${s.sintoma}: ${s.gravidade}`)
-                    .join("// ")
+                ? analysisResult.sintomas.map((s) => ({
+                    label: s.sintoma,
+                    level: s.gravidade,
+                  }))
                 : "Sem sintomas identificados ainda."
             }
             loading={analysisResult === null}
@@ -245,14 +244,14 @@ const statusJornadaData = generateChartData("status_jornada");
             title="Alertas de Risco"
             content={
               analysisResult?.alertas_risco?.length
-                ? analysisResult.alertas_risco
-                    .map((a) => `${a.alerta}: ${a.nivel_alerta}`)
-                    .join("// ")
+                ? analysisResult.alertas_risco.map((a) => ({
+                    label: a.alerta,
+                    level: a.nivel_alerta,
+                  }))
                 : "Aguardando análise do modelo..."
             }
             loading={analysisResult === null}
           />
-
 
         </div>
 

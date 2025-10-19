@@ -38,7 +38,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<Socket | null>(null);
 
- const onMessageTriggerRef = useRef(onMessageTrigger);
+  const onMessageTriggerRef = useRef(onMessageTrigger);
   useEffect(() => {
     onMessageTriggerRef.current = onMessageTrigger;
   }, [onMessageTrigger]);
@@ -88,6 +88,15 @@ const ChatBox: React.FC<ChatBoxProps> = ({
   const sendMessage = () => {
     if (!input.trim()) return;
 
+    const message : NewMessage = {
+      session_id: session_id,
+      sender_role: role === "medic" ? "doctor" : "patient",
+      patient_id: patient_id || "",
+      message: input,
+    };
+    
+    insertMessage(message)
+
     const userMessage: Message = {
       sender: role, // current user role
       name: "Você",
@@ -100,15 +109,6 @@ const ChatBox: React.FC<ChatBoxProps> = ({
       hash: session_id,
       content: input,
     });
-
-    const message : NewMessage = {
-      session_id: session_id,
-      sender_role: role === "medic" ? "doctor" : "patient",
-      patient_id: patient_id || "",
-      message: input,
-    };
-    
-    insertMessage(message)
 
     if (onMessageTrigger) onMessageTrigger();
 

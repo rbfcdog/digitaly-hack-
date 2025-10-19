@@ -1,9 +1,14 @@
-// src/components/InfoBox.tsx
 import React, { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+
+interface Pair {
+  label: string;
+  level: "leve" | "medio" | "grave" | "gravissimo";
+}
 
 interface InfoBoxProps {
   title: string;
-  content: string | null;
+  content?: string | Pair[];
   style?: React.CSSProperties;
   loading?: boolean;
 }
@@ -41,13 +46,16 @@ const InfoBox: React.FC<InfoBoxProps> = ({ title, content, style, loading = fals
       >
         {title}
       </h3>
+
       <div
         style={{
           color: "#333",
           whiteSpace: "pre-wrap",
-          display: "block", // mudou de flex para block
+          display: "flex",
+          flexDirection: "column",
+          gap: "0.5rem",
           minHeight: "2em",
-          wordBreak: "break-word", // quebra palavras longas
+          wordBreak: "break-word",
           overflowWrap: "break-word",
           lineHeight: 1.4,
         }}
@@ -56,6 +64,25 @@ const InfoBox: React.FC<InfoBoxProps> = ({ title, content, style, loading = fals
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
             <div className="spinner" />
             <span>Chamando o agente...</span>
+          </div>
+        ) : Array.isArray(content) ? (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+            {content.map((item, idx) => (
+              <Badge
+                key={idx}
+                className={
+                  item.level === "leve"
+                    ? "bg-green-200 text-green-800"
+                    : item.level === "medio"
+                    ? "bg-yellow-200 text-yellow-800"
+                    : item.level === "grave"
+                    ? "bg-orange-200 text-orange-800"
+                    : "bg-red-200 text-red-900"
+                }
+              >
+                {item.label}: {item.level}
+              </Badge>
+            ))}
           </div>
         ) : (
           content
