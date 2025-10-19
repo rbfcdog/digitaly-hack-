@@ -130,16 +130,19 @@ export default function MedicoPage() {
   }, [patientInfo]);
 
 
-  // 🧮 Função para gerar dados de gráfico a partir do allPatientsInfo
 const generateChartData = (field: keyof ClientInfo) => {
   if (!allPatientsInfo) return [];
+
   const counts: Record<string, number> = {};
+
   allPatientsInfo.forEach(p => {
-    const key = p[field] || "Desconhecido";
+    const key = String(p[field] ?? "Desconhecido"); // garante que seja string
     counts[key] = (counts[key] || 0) + 1;
   });
+
   return Object.entries(counts).map(([name, value]) => ({ name, value }));
 };
+
 
 // Dados dinâmicos para o dashboard
 const estadiamentoData = generateChartData("estadiamento");
