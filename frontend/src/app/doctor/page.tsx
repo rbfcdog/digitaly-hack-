@@ -261,7 +261,7 @@ const statusJornadaData = generateChartData("status_jornada");
             width: "50%",
             display: "flex",
             flexDirection: "column",
-            height: "100%",
+            height: "98%",
           }}
         >
           <ChatBox
