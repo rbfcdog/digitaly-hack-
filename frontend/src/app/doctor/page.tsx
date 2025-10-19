@@ -11,6 +11,7 @@ import Notification from "@/components/notification/notification";
 
 import type { PatientAnalysis, ClientInfo } from "@/types";
 
+
 export default function MedicoPage() {
   const headerHeight = 60;
   const baseUrl = "http://localhost:3000";
@@ -23,6 +24,10 @@ export default function MedicoPage() {
   const [lastTrigger, setLastTrigger] = useState<Date | null>(null);
   const [analysisResult, setAnalysisResult] = useState<PatientAnalysis | null>(null);
   const [notifMessage, setNotifMessage] = useState<string | null>(null);
+  const [consultaAtrasadaMsg, setConsultaAtrasadaMsg] = useState<string | null>(null);
+
+
+
   const [patientInfo, setPatientInfo] = useState<ClientInfo | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -36,6 +41,8 @@ export default function MedicoPage() {
       fetchPatientInfo();
     }
   }, [patient_id]);
+
+
 
   // 🔥 Triggered whenever ChatBox receives a new message
   const handleMessageTrigger = async () => {
@@ -54,20 +61,59 @@ export default function MedicoPage() {
     }
   };
 
+    // 🟦 Mensagem inicial de boas-vindas
   useEffect(() => {
     setNotifMessage("Bem-vindo ao atendimento virtual!");
   }, []);
 
-  const renderContent = (content: React.ReactNode) => {
-    if (loading) {
-      return (
-        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
-          <div className="spinner"></div>
-        </div>
-      );
+  // 🟥 Verifica se a consulta está atrasada e gera mensagem detalhada
+  useEffect(() => {
+    if (!patientInfo?.proxima_consulta) {
+      setConsultaAtrasadaMsg(null);
+      return;
     }
-    return content;
-  };
+
+    let proxima: Date | null = null;
+
+    // 🛠️ Trata formatos diferentes de data
+    const valor = patientInfo.proxima_consulta.trim();
+
+    if (/^\d{4}-\d{2}-\d{2}/.test(valor)) {
+      // formato ISO (ex: 2025-10-10)
+      proxima = new Date(valor);
+    } else if (/^\d{2}\/\d{2}\/\d{4}$/.test(valor)) {
+      // formato brasileiro (ex: 10/10/2025)
+      const [dia, mes, ano] = valor.split("/");
+      proxima = new Date(`${ano}-${mes}-${dia}T00:00:00`);
+    } else {
+      console.warn("⚠️ Formato de data não reconhecido:", valor);
+      setConsultaAtrasadaMsg(null);
+      return;
+    }
+
+    if (isNaN(proxima.getTime())) {
+      console.warn("❌ Data inválida:", proxima);
+      return;
+    }
+
+    const hoje = new Date();
+    const diffDias = Math.floor((hoje.getTime() - proxima.getTime()) / (1000 * 60 * 60 * 24));
+
+    console.log(`📅 Diferença de dias: ${diffDias}`);
+
+    if (diffDias > 7) {
+      const dataFormatada = proxima.toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+      setConsultaAtrasadaMsg(
+        `Esse paciente está com consulta atrasada! A última consulta deveria ter ocorrido em ${dataFormatada}.`
+      );
+    } else {
+      setConsultaAtrasadaMsg(null);
+    }
+  }, [patientInfo]);
 
   return (
     <div
@@ -80,13 +126,29 @@ export default function MedicoPage() {
     >
       <HeaderBar height={headerHeight} session_id={session_id} patient_id={patient_id} baseUrl={baseUrl} />
 
+      {/* Notificação de boas-vindas */}
       <Notification
         message={notifMessage || ""}
         visible={!!notifMessage}
         duration={10000}
+        color="green"
+        offsetY={20}
         onClose={() => setNotifMessage(null)}
       />
 
+      {/* 🔴 Notificação de consulta atrasada */}
+      {consultaAtrasadaMsg && (
+        <Notification
+          message={consultaAtrasadaMsg}
+          visible={true}
+          duration={15000}
+          color="red"
+          offsetY={70}
+          onClose={() => setConsultaAtrasadaMsg(null)}
+        />
+      )}
+
+      {/* CONTEÚDO PRINCIPAL */}
       <div
         style={{
           display: "flex",

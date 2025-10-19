@@ -6,6 +6,8 @@ interface NotificationProps {
   duration?: number;
   visible: boolean;
   onClose: () => void;
+  color?: string;
+  offsetY?: number; // 🆕 deslocamento vertical (em pixels)
 }
 
 const Notification: React.FC<NotificationProps> = ({
@@ -13,6 +15,8 @@ const Notification: React.FC<NotificationProps> = ({
   duration = 3000,
   visible,
   onClose,
+  color = "green",
+  offsetY = 20, // 🆕 padrão: 20px do topo
 }) => {
   const [show, setShow] = useState(false);
 
@@ -21,20 +25,31 @@ const Notification: React.FC<NotificationProps> = ({
       setShow(true);
       const timer = setTimeout(() => {
         setShow(false);
-        setTimeout(onClose, 300); // espera animação
+        setTimeout(onClose, 300);
       }, duration);
       return () => clearTimeout(timer);
     }
   }, [visible, duration, onClose]);
 
+  const backgroundColor =
+    color === "red"
+      ? "#f44336"
+      : color === "blue"
+      ? "#2196f3"
+      : color === "orange"
+      ? "#ff9800"
+      : color === "green"
+      ? "#4caf50"
+      : color;
+
   return (
     <div
       style={{
         position: "fixed",
-        top: show ? "20px" : "-100px",
+        top: show ? `${offsetY}px` : "-100px", 
         left: "50%",
         transform: "translateX(-50%)",
-        backgroundColor: "#4caf50",
+        backgroundColor,
         color: "#fff",
         padding: "12px 24px",
         borderRadius: "12px",

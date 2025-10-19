@@ -39,3 +39,4 @@ export interface PatientAnalysis {
 export interface SessionResponse {
   session_id: string;
 }
+
