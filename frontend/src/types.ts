@@ -27,14 +27,21 @@ export interface Message {
 
 export type NewMessage = Omit<Message, "id" | "created_at">;
 
-// Tipo retornado pelo agente
+
 export interface PatientAnalysis {
   patient_id: string;
-  sintomas: string[];
+  sintomas: {
+    sintoma: string;
+    gravidade: 'leve' | 'medio' | 'grave' | 'gravissimo';
+  }[];
   observacoes: string;
   sugestao_plano: string;
-  important_info: string[];
+  alertas_risco: {
+    alerta: string;
+    nivel_alerta: 'leve' | 'medio' | 'grave' | 'gravissimo';
+  }[];
 }
+
 
 export interface SessionResponse {
   session_id: string;

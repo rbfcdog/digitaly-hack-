@@ -177,7 +177,13 @@ export default function MedicoPage() {
 
           <InfoBox
             title="Sintomas"
-            content={analysisResult?.sintomas?.length ? analysisResult.sintomas.join(", ") : "Sem sintomas identificados ainda."}
+            content={
+              analysisResult?.sintomas?.length
+                ? analysisResult.sintomas
+                    .map((s) => `${s.sintoma}: ${s.gravidade}`)
+                    .join("// ")
+                : "Sem sintomas identificados ainda."
+            }
             loading={analysisResult === null}
           />
 
@@ -194,10 +200,17 @@ export default function MedicoPage() {
           />
 
           <InfoBox
-            title="Informações Importantes"
-            content={analysisResult?.important_info?.length ? analysisResult.important_info.join("// ") : "Aguardando análise do modelo..."}
+            title="Alertas de Risco"
+            content={
+              analysisResult?.alertas_risco?.length
+                ? analysisResult.alertas_risco
+                    .map((a) => `${a.alerta}: ${a.nivel_alerta}`)
+                    .join("// ")
+                : "Aguardando análise do modelo..."
+            }
             loading={analysisResult === null}
           />
+
 
         </div>
 
