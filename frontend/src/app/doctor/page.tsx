@@ -9,6 +9,7 @@ import { useSearchParams } from "next/navigation";
 import { agentConversation } from "@/services/agentService";
 import { queryClientInfo, queryAllClientsInfo} from "@/services/dbService";
 import Notification from "@/components/notification/notification";
+import { Loader2, Eye, Lightbulb } from "lucide-react";
 
 import type { PatientAnalysis, ClientInfo } from "@/types";
 
@@ -178,8 +179,6 @@ const separateAgeGroups = (field: keyof ClientInfo) => {
 
 const patientsAge = separateAgeGroups("idade");
 
-
-
   return (
     <div
       style={{
@@ -201,7 +200,58 @@ const patientsAge = separateAgeGroups("idade");
         selectedGender={selectedGender}
         setSelectedGender={setSelectedGender}
         patients={allPatientsInfo ?? undefined}
+        currentPatient={patientInfo ?? undefined}
+        currentPatientAnalysis={analysisResult}
       />
+
+      {/* 🔄 Mini Popup de Loading do Agente (Canto Superior Direito) */}
+      {loading && (
+        <div
+          style={{
+            position: "fixed",
+            top: "80px",
+            right: "20px",
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            borderRadius: "12px",
+            padding: "1rem 1.5rem",
+            display: "flex",
+            alignItems: "center",
+            gap: "0.75rem",
+            boxShadow: "0 8px 24px rgba(0, 0, 0, 0.2)",
+            zIndex: 9999,
+            animation: "slideInRight 0.3s ease-out",
+            minWidth: "240px",
+          }}
+        >
+          <Loader2
+            size={24}
+            color="#fff"
+            style={{
+              animation: "spin 1s linear infinite",
+              flexShrink: 0,
+            }}
+          />
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.1rem" }}>
+            <div
+              style={{
+                color: "#fff",
+                fontSize: "0.9rem",
+                fontWeight: 600,
+              }}
+            >
+              🧠 Atualizando Agente
+            </div>
+            <div
+              style={{
+                color: "rgba(255, 255, 255, 0.8)",
+                fontSize: "0.75rem",
+              }}
+            >
+              Analisando com IA...
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Notificação de boas-vindas */}
       {!consultaAtrasadaMsg && (
@@ -267,17 +317,87 @@ const patientsAge = separateAgeGroups("idade");
             loading={analysisResult === null}
           />
 
-          <InfoBox
-            title="Observações"
-            content={analysisResult?.observacoes || "Nenhuma observação disponível."}
-            loading={analysisResult === null}
-          />
+          {/* 🔷 OBSERVAÇÕES - Box Destacada com Borda Gradiente Azul */}
+          <div
+            className="highlighted-box-blue"
+            style={{
+              position: "relative",
+              padding: "3px",
+              borderRadius: "12px",
+              background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
+              boxShadow: "0 4px 12px rgba(59, 130, 246, 0.3)",
+              animation: "pulseBlue 3s ease-in-out infinite",
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                top: "-12px",
+                left: "16px",
+                background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
+                borderRadius: "20px",
+                padding: "0.4rem 0.8rem",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                boxShadow: "0 2px 8px rgba(59, 130, 246, 0.4)",
+                zIndex: 1,
+              }}
+            >
+              <Eye size={16} color="#fff" />
+              <span style={{ color: "#fff", fontSize: "0.75rem", fontWeight: 600 }}>
+                IA - Observações
+              </span>
+            </div>
+            <div style={{ background: "#fff", borderRadius: "10px" }}>
+              <InfoBox
+                title=""
+                content={analysisResult?.observacoes || "Nenhuma observação disponível."}
+                loading={analysisResult === null}
+              />
+            </div>
+          </div>
 
-          <InfoBox
-            title="Sugestão de Plano de Ação"
-            content={analysisResult?.sugestao_plano || "Aguardando sugestão do modelo..."}
-            loading={analysisResult === null}
-          />
+          {/* 💡 SUGESTÃO DE PLANO DE AÇÃO - Box Destacada com Borda Gradiente Dourado */}
+          <div
+            className="highlighted-box-gold"
+            style={{
+              position: "relative",
+              padding: "3px",
+              borderRadius: "12px",
+              background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+              boxShadow: "0 4px 12px rgba(245, 158, 11, 0.3)",
+              animation: "pulseGold 3s ease-in-out infinite",
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                top: "-12px",
+                left: "16px",
+                background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+                borderRadius: "20px",
+                padding: "0.4rem 0.8rem",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                boxShadow: "0 2px 8px rgba(245, 158, 11, 0.4)",
+                zIndex: 1,
+              }}
+            >
+              <Lightbulb size={16} color="#fff" />
+              <span style={{ color: "#fff", fontSize: "0.75rem", fontWeight: 600 }}>
+                IA - Recomendação
+              </span>
+            </div>
+            <div style={{ background: "#fff", borderRadius: "10px" }}>
+              <InfoBox
+                title=""
+                content={analysisResult?.sugestao_plano || "Aguardando sugestão do modelo..."}
+                loading={analysisResult === null}
+              />
+            </div>
+          </div>
 
           <InfoBox
             title="Alertas de Risco"
@@ -308,10 +428,51 @@ const patientsAge = separateAgeGroups("idade");
             session_id={session_id}
             role={role}
             patient_id={patient_id}
+            patient_name={patientInfo?.nome_paciente}
             onMessageTrigger={handleMessageTrigger}
           />
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes spin {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
+        }
+
+        @keyframes slideInRight {
+          from {
+            opacity: 0;
+            transform: translateX(100px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+
+        @keyframes pulseBlue {
+          0%, 100% {
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+          }
+          50% {
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.6);
+          }
+        }
+
+        @keyframes pulseGold {
+          0%, 100% {
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+          }
+          50% {
+            box-shadow: 0 4px 20px rgba(245, 158, 11, 0.6);
+          }
+        }
+      `}</style>
     </div>
   );
 }

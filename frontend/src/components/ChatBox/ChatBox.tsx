@@ -21,6 +21,7 @@ interface ChatBoxProps {
   session_id: string;
   role: "medic" | "patient"; // current user role
   patient_id?: string;
+  patient_name?: string; // nome do paciente
   onMessageTrigger?: () => void; // <- nova prop
 }
 
@@ -31,6 +32,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
   session_id,
   role,
   patient_id,
+  patient_name,
   onMessageTrigger, 
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -55,7 +57,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
         ...prev,
         {
           sender: data.role,
-          name: data.role === "medic" ? "Médico" : "Paciente",
+          name: data.role === "medic" ? "Dr. Médico" : (patient_name || "Paciente"),
           text: data.content,
         },
       ]);
@@ -131,17 +133,28 @@ const ChatBox: React.FC<ChatBoxProps> = ({
       style={{
         display: "flex",
         flexDirection: "column",
-        border: "1px solid #ddd",
-        borderRadius: "10px",
-        padding: "1rem",
-        backgroundColor: "#fafafa",
+        border: "2px solid #e5e7eb",
+        borderRadius: "16px",
+        padding: "1.25rem",
+        backgroundColor: "#ffffff",
         height: "100%",
+        boxShadow: "0 4px 16px rgba(0, 0, 0, 0.08)",
         ...style,
       }}
     >
       {title && (
-        <h2 style={{ color: "black", fontWeight: 600, marginBottom: "0.5rem" }}>
-          {title}
+        <h2 
+          style={{ 
+            color: "#1f2937", 
+            fontWeight: 700, 
+            marginBottom: "1rem",
+            fontSize: "1.25rem",
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+          }}
+        >
+          💬 {title}
         </h2>
       )}
 
@@ -150,9 +163,10 @@ const ChatBox: React.FC<ChatBoxProps> = ({
         style={{
           flex: 1,
           overflowY: "auto",
-          padding: "0.5rem",
-          backgroundColor: "#fff",
-          borderRadius: "8px",
+          padding: "1rem",
+          backgroundColor: "#f9fafb",
+          borderRadius: "12px",
+          border: "1px solid #e5e7eb",
         }}
       >
         {messages.map((msg, idx) => (
@@ -168,7 +182,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
       </div>
 
       {/* Input field + button */}
-      <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
+      <div style={{ display: "flex", gap: "0.75rem", marginTop: "1rem" }}>
         <input
           type="text"
           value={input}
@@ -177,19 +191,41 @@ const ChatBox: React.FC<ChatBoxProps> = ({
           placeholder={placeholder}
           style={{
             flex: 1,
-            border: "1px solid #ccc",
-            borderRadius: "5px",
-            padding: "0.5rem",
-            color: "black",
+            border: "2px solid #e5e7eb",
+            borderRadius: "12px",
+            padding: "0.75rem 1rem",
+            color: "#1f2937",
+            fontSize: "0.95rem",
+            outline: "none",
+            transition: "border-color 0.2s ease",
+          }}
+          onFocus={(e) => {
+            e.target.style.borderColor = "#3b82f6";
+          }}
+          onBlur={(e) => {
+            e.target.style.borderColor = "#e5e7eb";
           }}
         />
         <button
           onClick={sendMessage}
           style={{
-            backgroundColor: "#3b82f6",
+            background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
             color: "white",
-            borderRadius: "5px",
-            padding: "0.5rem 1rem",
+            borderRadius: "12px",
+            padding: "0.75rem 1.5rem",
+            fontWeight: 600,
+            border: "none",
+            cursor: "pointer",
+            boxShadow: "0 2px 8px rgba(59, 130, 246, 0.3)",
+            transition: "transform 0.2s ease, box-shadow 0.2s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "translateY(-2px)";
+            e.currentTarget.style.boxShadow = "0 4px 12px rgba(59, 130, 246, 0.4)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "translateY(0)";
+            e.currentTarget.style.boxShadow = "0 2px 8px rgba(59, 130, 246, 0.3)";
           }}
         >
           Enviar
