@@ -5,13 +5,13 @@ import type { PatientAnalysis, ClientInfo, Message } from '../../types/index.js'
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// Updated schema with "important_info" field
+// Updated schema
 export const PatientAnalysisSchema = z.object({
   patient_id: z.string(),
-  sintomas: z.array(z.string()),
+  sintomas: z.array(z.object({ sintoma: z.string(), gravidade: z.enum(['leve', 'medio', 'grave', 'gravissimo']) })),
   observacoes: z.string(),
   sugestao_plano: z.string(),
-  important_info: z.array(z.string()), // new field
+  alertas_risco: z.array(z.object({ alerta: z.string(), nivel_alerta: z.enum(['leve', 'medio', 'grave', 'gravissimo']) })),
 });
 
 export class AgentService {
@@ -25,8 +25,10 @@ export class AgentService {
 
     const patientInfoText = JSON.stringify(patient_info, null, 2);
 
-    const systemPrompt = `Você é um assistente médico especializado que analisa conversas entre médico e paciente.
-Use **todas as informações disponíveis do paciente** (como idade, sexo, diagnóstico, histórico de tratamentos, datas de consultas, tipo de câncer, estágio, etc.) e **todas as mensagens trocadas** para gerar um relatório completo.
+    const systemPrompt = `Você é um assistente médico especializado em pacientes oncológicos.
+Use **todas as informações do paciente** (tipo de câncer, estágio, histórico de tratamentos, consultas etc.) e **todas as mensagens do paciente** para gerar um relatório completo.
+Os sintomas devem ser classificados com um nível de gravidade baseado no tipo de câncer do paciente.
+Crie alertas de risco com níveis: leve, medio, grave ou gravissimo, considerando sintomas, exames e condições do paciente.
 Retorne sempre um JSON válido.`;
 
     const userPrompt = `
@@ -34,17 +36,10 @@ Informações do paciente:
 ${patientInfoText}
 
 Analise cuidadosamente estas informações e a conversa abaixo. Gere conclusões sobre:
-- Principais sintomas apresentados
-- Observações importantes para o acompanhamento
-- Sugestão de plano de ação
-
-Além disso, indique **quais mensagens foram mais importantes para chegar a estas conclusões**. 
-Liste essas informações em um campo chamado "important_info", da MESMA FORMA em que elas foram mandadas pelo paciente.
-Mostre apenas as mensagens do paciente que contribuíram para a análise, que realmente mostram condições dele, não inclua mensagens do médico.
-
-
-Atualize sempre as suas respostas com base com mudancas no comportamento do paciente, caso ele apresente novos sintomas ou relate novas informações ou fale que outros sintomas ja existentes mudaram.
-Caso ele fale que tenha falta de fome e depois que não tem mais, atualize a resposta removendo este sintoma.
+- Principais sintomas apresentados e sua gravidade (leve, medio, grave, gravissimo)
+- Observações detalhadas com base em TODO o histórico do paciente, levante a analise relacionando ao tipo de câncer 
+- Sugestão de plano de ação considerando histórico e tipo de câncer
+- Alertas de risco com nível de alerta, o alerta deve ser medido em relação ao tipo de câncer e histórico do paciente, qualquer informação relevante deve ser considerada
 
 Conversa:
 """
@@ -55,10 +50,10 @@ Retorne um JSON no seguinte formato estrito:
 
 {
   "patient_id": "...",
-  "sintomas": [...],
+  "sintomas": [{"sintoma": "...", "gravidade": "..."}],
   "observacoes": "...",
   "sugestao_plano": "...",
-  "important_info": ["..."] 
+  "alertas_risco": [{"alerta": "...", "nivel_alerta": "..."}]
 }`;
 
     console.log('User Prompt:', userPrompt); // Debugging line
@@ -67,14 +62,8 @@ Retorne um JSON no seguinte formato estrito:
       model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
       temperature: 0.3,
       messages: [
-        {
-          role: 'system',
-          content: systemPrompt,
-        },
-        {
-          role: 'user',
-          content: userPrompt,
-        }
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
       ],
       response_format: {
         type: 'json_schema',
@@ -85,12 +74,34 @@ Retorne um JSON no seguinte formato estrito:
             type: 'object',
             properties: {
               patient_id: { type: 'string' },
-              sintomas: { type: 'array', items: { type: 'string' } },
+              sintomas: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    sintoma: { type: 'string' },
+                    gravidade: { type: 'string', enum: ['leve', 'medio', 'grave', 'gravissimo'] },
+                  },
+                  required: ['sintoma', 'gravidade'],
+                  additionalProperties: false, // <-- ESSENCIAL
+                },
+              },
               observacoes: { type: 'string' },
               sugestao_plano: { type: 'string' },
-              important_info: { type: 'array', items: { type: 'string' } }, // new field
+              alertas_risco: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    alerta: { type: 'string' },
+                    nivel_alerta: { type: 'string', enum: ['leve', 'medio', 'grave', 'gravissimo'] },
+                  },
+                  required: ['alerta', 'nivel_alerta'],
+                  additionalProperties: false, // <-- ESSENCIAL
+                },
+              },
             },
-            required: ['patient_id', 'sintomas', 'observacoes', 'sugestao_plano', 'important_info'],
+            required: ['patient_id', 'sintomas', 'observacoes', 'sugestao_plano', 'alertas_risco'],
             additionalProperties: false,
           },
         },

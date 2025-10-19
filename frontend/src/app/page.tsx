@@ -11,7 +11,7 @@ export default function HomePage() {
   useEffect(() => {
     const initSession = async () => {
       try {
-        const patient_id = "P-0036"; // Example patient ID
+        const patient_id = "P-0057"; // Example patient ID
         const res = await startSession(patient_id);
         const session = res.session_id;
 

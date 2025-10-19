@@ -29,8 +29,6 @@ export default function MedicoPage() {
   const [showDashboard, setShowDashboard] = useState(false); 
 
 
-
-
   const [patientInfo, setPatientInfo] = useState<ClientInfo | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -136,6 +134,7 @@ export default function MedicoPage() {
 // agora respeita o filtro de sexo (selectedGender)
 const generateChartData = (field: keyof ClientInfo) => {
   if (!allPatientsInfo) return [];
+
   const counts: Record<string, number> = {};
   allPatientsInfo
     .filter(p => {
@@ -148,6 +147,7 @@ const generateChartData = (field: keyof ClientInfo) => {
     });
   return Object.entries(counts).map(([name, value]) => ({ name, value }));
 };
+
 
 // Dados dinâmicos para o dashboard
 const estadiamentoData = generateChartData("estadiamento");
@@ -248,13 +248,20 @@ const patientsAge = separateAgeGroups("idade");
         >
           <InfoBox
             title="Identificação do Paciente"
-            content={`ID: ${patient_id || "Carregando..."}\nNome: ${patientInfo?.nome_paciente || "Carregando..."}\nIdade: ${patientInfo?.idade || "Carregando..."}\nSexo: ${patientInfo?.sexo || "Carregando..."}`}
+            content={`ID: ${patient_id || "Carregando..."}\nNome: ${patientInfo?.nome_paciente || "Carregando..."}\nIdade: ${patientInfo?.idade || "Carregando..."}`}
             loading={!patientInfo}
           />
 
           <InfoBox
             title="Sintomas"
-            content={analysisResult?.sintomas?.length ? analysisResult.sintomas.join(", ") : "Sem sintomas identificados ainda."}
+            content={
+              analysisResult?.sintomas?.length
+                ? analysisResult.sintomas.map((s) => ({
+                    label: s.sintoma,
+                    level: s.gravidade,
+                  }))
+                : "Sem sintomas identificados ainda."
+            }
             loading={analysisResult === null}
           />
 
@@ -271,8 +278,15 @@ const patientsAge = separateAgeGroups("idade");
           />
 
           <InfoBox
-            title="Informações Importantes"
-            content={analysisResult?.important_info?.length ? analysisResult.important_info.join("// ") : "Aguardando análise do modelo..."}
+            title="Alertas de Risco"
+            content={
+              analysisResult?.alertas_risco?.length
+                ? analysisResult.alertas_risco.map((a) => ({
+                    label: a.alerta,
+                    level: a.nivel_alerta,
+                  }))
+                : "Aguardando análise do modelo..."
+            }
             loading={analysisResult === null}
           />
 
