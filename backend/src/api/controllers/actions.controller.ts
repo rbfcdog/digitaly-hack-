@@ -29,16 +29,14 @@ static createSession(req: Request, res: Response) {
     SessionsManager.addSession(hash, patient_id);
 
     return res.status(200).json({
-      message: "Sessão criada com sucesso",
-      url: sessionUrl,
-      hash
+      session_id : hash
     });
   }
 
   static async queryClientInfo(req: Request, res: Response) {
     try {
-      const { clientId } = req.body;
-      const clientInfo = await supabaseService.queryClientInfo(clientId);
+      const { patient_id } = req.body;
+      const clientInfo = await supabaseService.queryClientInfo(patient_id);
       res.status(200).json(clientInfo);
     } catch (error: any) {
       console.error("Erro ao consultar informações do cliente:", error.message);
@@ -87,7 +85,7 @@ static createSession(req: Request, res: Response) {
       const messages = await supabaseService.queryAllClientMessages(patient_id);
       const patient_info = await supabaseService.queryClientInfo(patient_id);
       const analysis = await agentService.analyzePatientConversation(messages, patient_info);
-      
+
       res.status(200).json(analysis);
     } catch (error: any) {
       console.error("Erro na conversa do agente:", error.message);

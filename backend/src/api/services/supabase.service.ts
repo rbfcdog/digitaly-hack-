@@ -13,6 +13,7 @@ export class supabaseService {
         if (error) {
             throw new Error(`Error fetching client info: ${error.message}`);
         }
+
         return data;
     }
 

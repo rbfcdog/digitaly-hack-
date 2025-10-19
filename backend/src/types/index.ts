@@ -33,4 +33,9 @@ export interface PatientAnalysis {
   sintomas: string[];
   observacoes: string;
   sugestao_plano: string;
+  important_info: string[];
+}
+
+export interface SessionResponse {
+  session_id: string;
 }

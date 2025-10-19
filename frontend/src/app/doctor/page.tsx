@@ -6,41 +6,56 @@ import InfoBox from "@/components/InfoBox/InfoBox";
 import HeaderBar from "@/components/HeaderBar/Headerbar";
 import { useSearchParams } from "next/navigation";
 import { agentConversation } from "@/services/agentService";
+import { queryClientInfo } from "@/services/dbService";
 import Notification from "@/components/notification/notification";
+
+import type { PatientAnalysis, ClientInfo } from "@/types";
 
 export default function MedicoPage() {
   const headerHeight = 60;
+  const baseUrl = "http://localhost:3000";
+
   const searchParams = useSearchParams();
 
   const session_id = searchParams.get("session") || "";
   const role = "medic";
   const patient_id = searchParams.get("id") || undefined;
 
-  // Example state to show the trigger in action
   const [lastTrigger, setLastTrigger] = useState<Date | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<PatientAnalysis | null>(null);
+  const [notifMessage, setNotifMessage] = useState<string | null>(null);
 
+  const [patientInfo, setPatientInfo] = useState<ClientInfo | null>(null);
+
+  const fetchPatientInfo = async () => {
+    const info = await queryClientInfo(patient_id!);
+    setPatientInfo(info);
+  }
+
+  useEffect(() => {
+    if (patient_id) {
+      fetchPatientInfo();
+    }
+  }, [patient_id]);
+
+  // 🔥 Triggered whenever ChatBox receives a new message
   const handleMessageTrigger = async () => {
     console.log("💬 Novo evento de mensagem recebido!");
     setLastTrigger(new Date());
 
     try {
-      // Wait for your analysis result
       const analysis = await agentConversation(patient_id!);
+      setAnalysisResult(analysis);
 
-      // analysis is a typed object — stringify it for clarity
       console.log("🧠 Analysis result:", JSON.stringify(analysis, null, 2));
     } catch (error) {
       console.error("❌ Error while analyzing conversation:", error);
     }
   };
-  
-  const [notifMessage, setNotifMessage] = useState<string | null>(null);
 
-  
-    // Mostrar a notificação sempre que recarregar
-    useEffect(() => {
-      setNotifMessage("Bem-vindo ao atendimento virtual!");
-    }, []);
+  useEffect(() => {
+    setNotifMessage("Bem-vindo ao atendimento virtual!");
+  }, []);
 
   return (
     <div
@@ -53,7 +68,7 @@ export default function MedicoPage() {
     >
       {/* HEADER */}
       <HeaderBar height={headerHeight} />
-    
+
       {/* NOTIFICAÇÃO */}
       <Notification
         message={notifMessage || ""}
@@ -85,7 +100,7 @@ export default function MedicoPage() {
         >
           <InfoBox
             title="Identificação do Paciente"
-            content={`Nome: João Silva\nIdade: 35 anos\nSexo: Masculino`}
+            content={`ID: ${patient_id || "Carregando..."}\nNome: ${patientInfo?.nome_paciente || "Carregando..."}\nIdade: ${patientInfo?.idade || "Carregando..."}\nSexo: ${patientInfo?.sexo || "Carregando..."}`}
             style={{
               flex: 1,
               overflowY: "auto",
@@ -96,9 +111,14 @@ export default function MedicoPage() {
               padding: "0.5rem",
             }}
           />
+
           <InfoBox
             title="Sintomas"
-            content={`Febre, tosse seca, cansaço.`}
+            content={
+              analysisResult?.sintomas?.length
+                ? analysisResult.sintomas.join(", ")
+                : "Sem sintomas identificados ainda."
+            }
             style={{
               flex: 1,
               overflowY: "auto",
@@ -109,9 +129,10 @@ export default function MedicoPage() {
               padding: "0.5rem",
             }}
           />
+
           <InfoBox
             title="Observações"
-            content={`Paciente apresentou melhora parcial após medicação anterior.`}
+            content={analysisResult?.observacoes || "Nenhuma observação disponível."}
             style={{
               flex: 1,
               overflowY: "auto",
@@ -122,9 +143,12 @@ export default function MedicoPage() {
               padding: "0.5rem",
             }}
           />
+
           <InfoBox
             title="Sugestão de Plano de Ação"
-            content={`Solicitar exames laboratoriais; monitorar sintomas; prescrever medicamento X se necessário.`}
+            content={
+              analysisResult?.sugestao_plano || "Aguardando sugestão do modelo..."
+            }
             style={{
               flex: 1,
               overflowY: "auto",
@@ -135,13 +159,47 @@ export default function MedicoPage() {
               padding: "0.5rem",
             }}
           />
-          {/* Mostra o último trigger como exemplo */}
-          {lastTrigger && (
-            <InfoBox
-              title="Último Trigger"
-              content={`Última mensagem recebida em: ${lastTrigger.toLocaleTimeString()}`}
-              style={{ flex: 0.5, overflowY: "auto" }}
-            />
+
+          <InfoBox
+            title="Informações Importantes"
+            content={
+              analysisResult?.important_info?.length
+                ? analysisResult.important_info.join("// ")
+                : "Aguardando análise do modelo..."
+            }
+            style={{
+              flex: 1,
+              overflowY: "auto",
+              backgroundColor: "#ffffff",
+              borderRadius: "12px",
+              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
+              border: "1px solid rgba(0,0,0,0.08)",
+              padding: "0.5rem",
+            }}
+          />
+
+          {patient_id && session_id && (
+            <div
+              onClick={() => {
+                const url = `/patient?session=${session_id}&id=${patient_id}`;
+                window.open(url, "_blank"); // open in new tab
+              }}
+              style={{ cursor: "pointer" }}
+            >
+              <InfoBox
+                title="Link do Paciente"
+                content={`$${baseUrl}/patient?session=${session_id}&id=${patient_id}`}
+                style={{
+                  flex: 0.5,
+                  overflowY: "auto",
+                  backgroundColor: "#ffffff",
+                  borderRadius: "12px",
+                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
+                  border: "1px solid rgba(0,0,0,0.08)",
+                  padding: "0.5rem",
+                }}
+              />
+            </div>
           )}
         </div>
 
@@ -159,7 +217,7 @@ export default function MedicoPage() {
             session_id={session_id}
             role={role}
             patient_id={patient_id}
-            onMessageTrigger={handleMessageTrigger} // 🔥 Trigger callback
+            onMessageTrigger={handleMessageTrigger}
             style={{
               height: "98%",
               display: "flex",
