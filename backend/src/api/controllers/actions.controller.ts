@@ -3,6 +3,7 @@ import crypto from "crypto";
 import { agentService } from "../services/agent.service.js";
 import { SessionsManager } from '../services/sessions.service.js';
 import { supabaseService } from "../services/supabase.service.js";
+import { ClientInfo } from "../../types/index.js";
 
 export class ActionsController {
   static async foo(req: Request, res: Response) {
@@ -93,7 +94,15 @@ static createSession(req: Request, res: Response) {
     }
   }
   
-  
+  static async queryAllClientsInfo(req: Request, res: Response) {
+    try {
+      const infos: ClientInfo[] = await supabaseService.queryAllClientsInfo();
+      res.status(200).json(infos);
+    } catch (error: any) {
+      console.error("Erro ao consultar todas informações do clientes:", error.message);
+      res.status(500).json({ error: error.message });
+    }
+  }
 
 }
 

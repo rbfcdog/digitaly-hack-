@@ -11,6 +11,7 @@ router.post("/query-client-info", ActionsController.queryClientInfo);
 router.post("/insert-message", ActionsController.insertMessage);
 router.post("/query-all-client-messages", ActionsController.queryAllClientMessages);
 router.post("/query-session-client-messages", ActionsController.querySessionClientMessages);
+router.post("/query-all-clients-info", ActionsController.queryAllClientsInfo);
 
 router.post("/agent-conversation", ActionsController.agentConversation);
 

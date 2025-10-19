@@ -57,4 +57,18 @@ export class supabaseService {
         return data;
     }
 
+
+    static async queryAllClientsInfo(): Promise<ClientInfo[]> {
+
+        const { data, error } = await supabase
+        .from("client_info")
+        .select("*");
+
+        if (error) {
+            throw new Error(`Error fetching all clients info: ${error.message}`);
+        }
+
+        return data;
+    }
+
 }

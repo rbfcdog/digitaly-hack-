@@ -4,9 +4,10 @@ import React, { useState, useEffect } from "react";
 import ChatBox from "@/components/ChatBox/ChatBox";
 import InfoBox from "@/components/InfoBox/InfoBox";
 import HeaderBar from "@/components/HeaderBar/Headerbar";
+import DashboardModal from "@/components/DashboardModal/DashboardModal";
 import { useSearchParams } from "next/navigation";
 import { agentConversation } from "@/services/agentService";
-import { queryClientInfo } from "@/services/dbService";
+import { queryClientInfo, queryAllClientsInfo} from "@/services/dbService";
 import Notification from "@/components/notification/notification";
 
 import type { PatientAnalysis, ClientInfo } from "@/types";
@@ -25,11 +26,16 @@ export default function MedicoPage() {
   const [analysisResult, setAnalysisResult] = useState<PatientAnalysis | null>(null);
   const [notifMessage, setNotifMessage] = useState<string | null>(null);
   const [consultaAtrasadaMsg, setConsultaAtrasadaMsg] = useState<string | null>(null);
+  const [showDashboard, setShowDashboard] = useState(false); 
+
 
 
 
   const [patientInfo, setPatientInfo] = useState<ClientInfo | null>(null);
   const [loading, setLoading] = useState(false);
+
+
+  const [allPatientsInfo, setAllPatientsInfo] = useState<ClientInfo[] | null>(null);
 
   const fetchPatientInfo = async () => {
     const info = await queryClientInfo(patient_id!);
@@ -42,6 +48,14 @@ export default function MedicoPage() {
     }
   }, [patient_id]);
 
+  const fetchAllPatientsInfo = async () => {
+    const info = await queryAllClientsInfo();
+    setAllPatientsInfo(info);
+  }
+
+  useEffect(() => {
+      fetchAllPatientsInfo();
+  }, []);
 
 
   // 🔥 Triggered whenever ChatBox receives a new message
@@ -115,6 +129,23 @@ export default function MedicoPage() {
     }
   }, [patientInfo]);
 
+
+  // 🧮 Função para gerar dados de gráfico a partir do allPatientsInfo
+const generateChartData = (field: keyof ClientInfo) => {
+  if (!allPatientsInfo) return [];
+  const counts: Record<string, number> = {};
+  allPatientsInfo.forEach(p => {
+    const key = p[field] || "Desconhecido";
+    counts[key] = (counts[key] || 0) + 1;
+  });
+  return Object.entries(counts).map(([name, value]) => ({ name, value }));
+};
+
+// Dados dinâmicos para o dashboard
+const estadiamentoData = generateChartData("estadiamento");
+const tipoCancerData = generateChartData("tipo_cancer");
+const statusJornadaData = generateChartData("status_jornada");
+
   return (
     <div
       style={{
@@ -124,7 +155,15 @@ export default function MedicoPage() {
         background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
       }}
     >
-      <HeaderBar height={headerHeight} session_id={session_id} patient_id={patient_id} baseUrl={baseUrl} />
+      <HeaderBar height={headerHeight} session_id={session_id} patient_id={patient_id} baseUrl={baseUrl} onDashboardClick={() => setShowDashboard(true)} />
+
+      <DashboardModal
+        visible={showDashboard}
+        onClose={() => setShowDashboard(false)}
+        estadiamentoData={estadiamentoData}
+        tipoCancerData={tipoCancerData}
+        statusJornadaData={statusJornadaData}
+      />
 
       {/* Notificação de boas-vindas */}
       <Notification

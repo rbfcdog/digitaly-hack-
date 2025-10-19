@@ -5,6 +5,7 @@ interface HeaderBarProps {
   patient_id?: string;
   session_id?: string;
   baseUrl?: string;
+  onDashboardClick?: () => void;
 }
 
 const HeaderBar: React.FC<HeaderBarProps> = ({
@@ -12,6 +13,7 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
   patient_id,
   session_id,
   baseUrl = "",
+  onDashboardClick,
 }) => {
   const currentDate = new Date();
   const formattedDate = currentDate.toLocaleDateString("pt-BR", {
@@ -43,9 +45,7 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
         color: "#fff",
       }}
     >
-      {/* LADO ESQUERDO: Bolinha + Links */}
       <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-        {/* Bolinha */}
         <div
           style={{
             width: "36px",
@@ -66,8 +66,7 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
           M
         </div>
 
-        {/* Links */}
-        <nav style={{ display: "flex", gap: "1rem", fontWeight: 600 }}>
+        <nav style={{ display: "flex", gap: "1rem", alignItems: "center", fontWeight: 600 }}>
           {["Início", "Dados Pessoais"].map((text) => (
             <a
               key={text}
@@ -77,6 +76,7 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
                 textDecoration: "none",
                 transition: "text-shadow 0.3s ease, transform 0.3s ease",
               }}
+              // 👇 EFEITOS DE VOLTA
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
             >
@@ -95,16 +95,35 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
                 textDecoration: "none",
                 transition: "text-shadow 0.3s ease, transform 0.3s ease",
               }}
+               // 👇 EFEITOS DE VOLTA
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
             >
               Página do Paciente
             </a>
           )}
+
+          {/* Botão Dashboard (só aparece se onDashboardClick for passado) */}
+          {onDashboardClick && (
+            <button
+              onClick={onDashboardClick}
+              style={{
+                marginLeft: "auto",
+                backgroundColor: "#fff",
+                color: "#3b82f6",
+                border: "none",
+                borderRadius: "8px",
+                padding: "0.4rem 0.8rem",
+                cursor: "pointer",
+                fontWeight: 600,
+              }}
+            >
+              Dashboard
+            </button>
+          )}
         </nav>
       </div>
 
-      {/* LADO DIREITO: Data atual */}
       <div style={{ fontWeight: 500, fontSize: "0.9rem" }}>{formattedDate}</div>
     </header>
   );

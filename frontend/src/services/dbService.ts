@@ -34,3 +34,17 @@ export async function queryAllClientMessages(patient_id: string): Promise<Messag
     throw error
   }
 }
+
+export async function queryAllClientsInfo(): Promise<ClientInfo[]> {
+  try {
+    const body = { }
+    const res = await api.post<ClientInfo[]>("api/actions/query-all-clients-info", body)
+    console.log(res)
+    return res.data
+  } catch (error) {
+    console.error("Error:", error)
+    throw error // rethrow so the caller can handle it
+  }
+}
+
+
