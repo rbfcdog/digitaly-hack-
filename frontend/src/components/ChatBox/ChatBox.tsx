@@ -38,17 +38,19 @@ const ChatBox: React.FC<ChatBoxProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<Socket | null>(null);
 
-  // Initialize socket once
+ const onMessageTriggerRef = useRef(onMessageTrigger);
   useEffect(() => {
-    socketRef.current = io("http://localhost:3001");
+    onMessageTriggerRef.current = onMessageTrigger;
+  }, [onMessageTrigger]);
 
-    socketRef.current.emit("join_room", {
-      hash: session_id,
-      role,
-      patient_id,
-    });
+  // Socket setup
+  useEffect(() => {
+    const socket = io("http://localhost:3001");
+    socketRef.current = socket;
 
-    const handleRecieveMessage = (data: { role: "medic" | "patient"; content: string }) => {
+    socket.emit("join_room", { hash: session_id, role, patient_id });
+
+    const handleReceiveMessage = (data: { role: "medic" | "patient"; content: string }) => {
       setMessages((prev) => [
         ...prev,
         {
@@ -58,20 +60,17 @@ const ChatBox: React.FC<ChatBoxProps> = ({
         },
       ]);
 
-      try {
-        if (onMessageTrigger) {
-          onMessageTrigger();
+      // ✅ Trigger the latest callback
+      if (onMessageTriggerRef.current) {
+        try {
+          onMessageTriggerRef.current();
+        } catch (err) {
+          console.error("Error in onMessageTrigger:", err);
         }
-      } catch (err) {
-        // ensure listener doesn't crash due to parent callback error
-        console.error("Error in onMessageTrigger:", err);
       }
     };
 
-    socketRef.current.on(
-      "chat_message",
-      handleRecieveMessage
-    );
+    socket.on("chat_message", handleReceiveMessage);
 
     if (onMessageTrigger) {
       onMessageTrigger();
@@ -79,7 +78,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
 
     return () => {
       if (socketRef.current) {
-        socketRef.current.off("chat_message", handleRecieveMessage);
+        socketRef.current.off("chat_message", handleReceiveMessage);
         socketRef.current.disconnect();
       }
     };

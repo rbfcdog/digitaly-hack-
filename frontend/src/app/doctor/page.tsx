@@ -14,7 +14,6 @@ import type { PatientAnalysis, ClientInfo } from "@/types";
 export default function MedicoPage() {
   const headerHeight = 60;
   const baseUrl = "http://localhost:3000";
-
   const searchParams = useSearchParams();
 
   const session_id = searchParams.get("session") || "";
@@ -24,13 +23,13 @@ export default function MedicoPage() {
   const [lastTrigger, setLastTrigger] = useState<Date | null>(null);
   const [analysisResult, setAnalysisResult] = useState<PatientAnalysis | null>(null);
   const [notifMessage, setNotifMessage] = useState<string | null>(null);
-
   const [patientInfo, setPatientInfo] = useState<ClientInfo | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const fetchPatientInfo = async () => {
     const info = await queryClientInfo(patient_id!);
     setPatientInfo(info);
-  }
+  };
 
   useEffect(() => {
     if (patient_id) {
@@ -42,20 +41,33 @@ export default function MedicoPage() {
   const handleMessageTrigger = async () => {
     console.log("💬 Novo evento de mensagem recebido!");
     setLastTrigger(new Date());
+    setLoading(true);
 
     try {
       const analysis = await agentConversation(patient_id!);
       setAnalysisResult(analysis);
-
       console.log("🧠 Analysis result:", JSON.stringify(analysis, null, 2));
     } catch (error) {
       console.error("❌ Error while analyzing conversation:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     setNotifMessage("Bem-vindo ao atendimento virtual!");
   }, []);
+
+  const renderContent = (content: React.ReactNode) => {
+    if (loading) {
+      return (
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
+          <div className="spinner"></div>
+        </div>
+      );
+    }
+    return content;
+  };
 
   return (
     <div
@@ -66,10 +78,8 @@ export default function MedicoPage() {
         background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
       }}
     >
-      {/* HEADER */}
-      <HeaderBar height={headerHeight} />
+      <HeaderBar height={headerHeight} session_id={session_id} patient_id={patient_id} baseUrl={baseUrl} />
 
-      {/* NOTIFICAÇÃO */}
       <Notification
         message={notifMessage || ""}
         visible={!!notifMessage}
@@ -77,15 +87,14 @@ export default function MedicoPage() {
         onClose={() => setNotifMessage(null)}
       />
 
-      {/* CONTEÚDO PRINCIPAL */}
       <div
         style={{
           display: "flex",
           flex: 1,
           gap: "1rem",
           padding: "1rem",
-          boxSizing: "border-box",
           height: `calc(100vh - ${headerHeight}px)`,
+          boxSizing: "border-box",
         }}
       >
         {/* LADO ESQUERDO */}
@@ -101,106 +110,33 @@ export default function MedicoPage() {
           <InfoBox
             title="Identificação do Paciente"
             content={`ID: ${patient_id || "Carregando..."}\nNome: ${patientInfo?.nome_paciente || "Carregando..."}\nIdade: ${patientInfo?.idade || "Carregando..."}\nSexo: ${patientInfo?.sexo || "Carregando..."}`}
-            style={{
-              flex: 1,
-              overflowY: "auto",
-              backgroundColor: "#ffffff",
-              borderRadius: "12px",
-              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-              border: "1px solid rgba(0,0,0,0.08)",
-              padding: "0.5rem",
-            }}
+            loading={!patientInfo}
           />
 
           <InfoBox
             title="Sintomas"
-            content={
-              analysisResult?.sintomas?.length
-                ? analysisResult.sintomas.join(", ")
-                : "Sem sintomas identificados ainda."
-            }
-            style={{
-              flex: 1,
-              overflowY: "auto",
-              backgroundColor: "#ffffff",
-              borderRadius: "12px",
-              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-              border: "1px solid rgba(0,0,0,0.08)",
-              padding: "0.5rem",
-            }}
+            content={analysisResult?.sintomas?.length ? analysisResult.sintomas.join(", ") : "Sem sintomas identificados ainda."}
+            loading={analysisResult === null}
           />
 
           <InfoBox
             title="Observações"
             content={analysisResult?.observacoes || "Nenhuma observação disponível."}
-            style={{
-              flex: 1,
-              overflowY: "auto",
-              backgroundColor: "#ffffff",
-              borderRadius: "12px",
-              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-              border: "1px solid rgba(0,0,0,0.08)",
-              padding: "0.5rem",
-            }}
+            loading={analysisResult === null}
           />
 
           <InfoBox
             title="Sugestão de Plano de Ação"
-            content={
-              analysisResult?.sugestao_plano || "Aguardando sugestão do modelo..."
-            }
-            style={{
-              flex: 1,
-              overflowY: "auto",
-              backgroundColor: "#ffffff",
-              borderRadius: "12px",
-              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-              border: "1px solid rgba(0,0,0,0.08)",
-              padding: "0.5rem",
-            }}
+            content={analysisResult?.sugestao_plano || "Aguardando sugestão do modelo..."}
+            loading={analysisResult === null}
           />
 
           <InfoBox
             title="Informações Importantes"
-            content={
-              analysisResult?.important_info?.length
-                ? analysisResult.important_info.join("// ")
-                : "Aguardando análise do modelo..."
-            }
-            style={{
-              flex: 1,
-              overflowY: "auto",
-              backgroundColor: "#ffffff",
-              borderRadius: "12px",
-              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-              border: "1px solid rgba(0,0,0,0.08)",
-              padding: "0.5rem",
-            }}
+            content={analysisResult?.important_info?.length ? analysisResult.important_info.join("// ") : "Aguardando análise do modelo..."}
+            loading={analysisResult === null}
           />
 
-          {patient_id && session_id && (
-            <div
-              onClick={() => {
-                const url = `/patient?session=${session_id}&id=${patient_id}`;
-                window.open(url, "_blank"); // open in new tab
-              }}
-              style={{ cursor: "pointer" }}
-            >
-              <InfoBox
-                title="Link do Paciente"
-                content={`$${baseUrl}/patient?session=${session_id}&id=${patient_id}`}
-                style={{
-                  flex: 0.5,
-                  overflowY: "auto",
-                  backgroundColor: "#ffffff",
-                  borderRadius: "12px",
-                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                  border: "1px solid rgba(0,0,0,0.08)",
-                  padding: "0.5rem",
-                }}
-              />
-            </div>
-          )}
         </div>
 
         {/* LADO DIREITO (CHAT) */}
@@ -218,16 +154,6 @@ export default function MedicoPage() {
             role={role}
             patient_id={patient_id}
             onMessageTrigger={handleMessageTrigger}
-            style={{
-              height: "98%",
-              display: "flex",
-              flexDirection: "column",
-              border: "1px solid rgba(0,0,0,0.08)",
-              borderRadius: "12px",
-              padding: "0.5rem",
-              backgroundColor: "#ffffff",
-              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-            }}
           />
         </div>
       </div>
