@@ -13,7 +13,6 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
   session_id,
   baseUrl = "",
 }) => {
-  // Data formatada em pt-BR
   const currentDate = new Date();
   const formattedDate = currentDate.toLocaleDateString("pt-BR", {
     weekday: "long",
@@ -22,6 +21,16 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
     year: "numeric",
   });
 
+  // Funções de hover para links e bolinha
+  const handleMouseEnter = (e: React.MouseEvent<HTMLElement>) => {
+    e.currentTarget.style.textShadow = "0 0 10px rgba(255,255,255,0.9)";
+    e.currentTarget.style.transform = "scale(1.05)";
+  };
+  const handleMouseLeave = (e: React.MouseEvent<HTMLElement>) => {
+    e.currentTarget.style.textShadow = "none";
+    e.currentTarget.style.transform = "scale(1)";
+  };
+
   return (
     <header
       style={{
@@ -29,15 +38,14 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        padding: "0 1.5rem",
+        padding: "0 1rem",
         backgroundColor: "#3b82f6",
         color: "#fff",
-        boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
       }}
     >
-      {/* ESQUERDA: Logo + Navegação */}
-      <div style={{ display: "flex", alignItems: "center", gap: "1.25rem" }}>
-        {/* Logo circular */}
+      {/* LADO ESQUERDO: Bolinha + Links */}
+      <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+        {/* Bolinha */}
         <div
           style={{
             width: "36px",
@@ -48,42 +56,35 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
             alignItems: "center",
             justifyContent: "center",
             color: "#3b82f6",
-            fontWeight: 700,
+            fontWeight: 600,
             cursor: "pointer",
-            userSelect: "none",
+            transition: "transform 0.3s ease, box-shadow 0.3s ease",
           }}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
         >
           M
         </div>
 
-        {/* Navegação */}
+        {/* Links */}
         <nav style={{ display: "flex", gap: "1rem", fontWeight: 600 }}>
-          <a
-            href="#"
-            style={{
-              color: "#fff",
-              textDecoration: "none",
-              transition: "opacity 0.2s",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
-            onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
-          >
-            Início
-          </a>
-          <a
-            href="#"
-            style={{
-              color: "#fff",
-              textDecoration: "none",
-              transition: "opacity 0.2s",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
-            onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
-          >
-            Dados Pessoais
-          </a>
+          {["Início", "Dados Pessoais"].map((text) => (
+            <a
+              key={text}
+              href="#"
+              style={{
+                color: "#fff",
+                textDecoration: "none",
+                transition: "text-shadow 0.3s ease, transform 0.3s ease",
+              }}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
+              {text}
+            </a>
+          ))}
 
-          {/* Link da página do paciente */}
+          {/* Link do paciente */}
           {patient_id && session_id && (
             <a
               href={`${baseUrl}/patient?session=${session_id}&id=${patient_id}`}
@@ -92,18 +93,18 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
               style={{
                 color: "#fff",
                 textDecoration: "none",
-                transition: "opacity 0.2s",
+                transition: "text-shadow 0.3s ease, transform 0.3s ease",
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
-              onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
             >
-              Acessar Página do Paciente
+              Página do Paciente
             </a>
           )}
         </nav>
       </div>
 
-      {/* DIREITA: Data atual */}
+      {/* LADO DIREITO: Data atual */}
       <div style={{ fontWeight: 500, fontSize: "0.9rem" }}>{formattedDate}</div>
     </header>
   );
