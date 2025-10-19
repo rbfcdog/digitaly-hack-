@@ -211,7 +211,7 @@ const statusJornadaData = generateChartData("status_jornada");
         >
           <InfoBox
             title="Identificação do Paciente"
-            content={`ID: ${patient_id || "Carregando..."}\nNome: ${patientInfo?.nome_paciente || "Carregando..."}\nIdade: ${patientInfo?.idade || "Carregando..."}\nSexo: ${patientInfo?.sexo || "Carregando..."}`}
+            content={`ID: ${patient_id || "Carregando..."}\nNome: ${patientInfo?.nome_paciente || "Carregando..."}\nIdade: ${patientInfo?.idade || "Carregando..."}`}
             loading={!patientInfo}
           />
 
