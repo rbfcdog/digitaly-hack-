@@ -2,14 +2,14 @@
 
 ## 📑 Índice
 
-1. [Visão Geral do Projeto](#visão-geral-do-projeto)
-2. [Stack Tecnológica](#stack-tecnológica)
-3. [Estrutura do Banco de Dados](#estrutura-do-banco-de-dados)
-4. [Backend - API](#backend---api)
-5. [Frontend - Interface](#frontend---interface)
-6. [Fluxo de Funcionamento](#fluxo-de-funcionamento)
-7. [Cobertura do Escopo](#cobertura-do-escopo)
-8. [Como Executar](#como-executar)
+1. [Visão Geral do Projeto](#-visão-geral-do-projeto)
+2. [Stack Tecnológica](#️-stack-tecnológica)
+3. [Estrutura do Banco de Dados](#️-estrutura-do-banco-de-dados)
+4. [Backend - API](#-backend---api)
+5. [Frontend - Interface](#-frontend---interface)
+6. [Fluxo de Funcionamento](#-fluxo-de-funcionamento)
+7. [Cobertura do Escopo](#-cobertura-do-escopo)
+8. [Como Executar](#-como-executar)
 
 ---
 
