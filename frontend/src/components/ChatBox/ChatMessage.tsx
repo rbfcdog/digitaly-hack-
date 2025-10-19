@@ -1,54 +1,62 @@
 import React from "react";
 
 interface ChatMessageProps {
-  sender: "user" | "bot";
+  sender: "patient" | "medic";
+  currentUserRole: "patient" | "medic";
   name: string;
   text: string;
 }
 
-const ChatMessage: React.FC<ChatMessageProps> = ({ sender, name, text }) => {
-  const isUser = sender === "user";
+const ChatMessage: React.FC<ChatMessageProps> = ({
+  sender,
+  currentUserRole,
+  name,
+  text,
+}) => {
+  // Align right if message is from current user
+  const isCurrentUser = sender === currentUserRole;
 
   return (
     <div
       style={{
         display: "flex",
         flexDirection: "column",
-        alignItems: isUser ? "flex-end" : "flex-start",
+        alignItems: isCurrentUser ? "flex-end" : "flex-start",
         marginBottom: "0.75rem",
       }}
     >
-      {/* Linha com ícone e nome */}
+      {/* Icon + Name */}
       <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-        <div
-          style={{
-            width: "28px",
-            height: "28px",
-            borderRadius: "50%",
-            backgroundColor: isUser ? "#3b82f6" : "#10b981",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            color: "#fff",
-            fontSize: "0.8rem",
-          }}
-        >
-          {name[0]}
-        </div>
+        {!isCurrentUser && (
+          <div
+            style={{
+              width: "28px",
+              height: "28px",
+              borderRadius: "50%",
+              backgroundColor: "#10b981", // other participant
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              color: "#fff",
+              fontSize: "0.8rem",
+            }}
+          >
+            {name[0]}
+          </div>
+        )}
         <strong style={{ fontSize: "0.8rem", color: "#000" }}>{name}</strong>
       </div>
 
-      {/* Caixa da mensagem */}
+      {/* Message box */}
       <div
         style={{
-          backgroundColor: isUser ? "#e0f2fe" : "#f0fdf4",
+          backgroundColor: isCurrentUser ? "#e0f2fe" : "#f0fdf4",
           borderRadius: "8px",
           padding: "0.5rem 0.75rem",
           marginTop: "0.25rem",
           maxWidth: "80%",
           wordWrap: "break-word",
-          color: "#000", // 🔹 texto preto
-          opacity: 1, // 🔹 sem transparência
+          color: "#000",
         }}
       >
         {text}

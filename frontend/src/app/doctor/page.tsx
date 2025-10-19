@@ -1,10 +1,19 @@
+"use client";
+
 import ChatBox from "@/components/ChatBox/ChatBox";
 import InfoBox from "@/components/InfoBox/InfoBox";
-import HeaderBar from "@/components/HeaderBar/Headerbar"; // import do novo header
+import HeaderBar from "@/components/HeaderBar/Headerbar";
+import { useSearchParams } from "next/navigation";
 import React from "react";
 
 export default function MedicoPage() {
   const headerHeight = 60;
+  const searchParams = useSearchParams();
+
+  // Get parameters from URL
+  const session_id = searchParams.get("session") || "";
+  const role = "medic";
+  const patient_id = searchParams.get("id") || undefined;
 
   return (
     <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
@@ -72,8 +81,11 @@ export default function MedicoPage() {
               border: "1px solid #ddd",
               borderRadius: "10px",
               padding: "0.5rem",
-              backgroundColor: "#fafafa",
+              backgroundColor: "#fafafa",                                                                                                                                                                               
             }}
+            session_id={session_id}
+            role={role}
+            patient_id={patient_id}                                                                                                                                                                                                                                                                               
           />
         </div>
       </div>

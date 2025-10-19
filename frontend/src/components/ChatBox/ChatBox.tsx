@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { io, Socket } from "socket.io-client";
+
 import ChatMessage from "./ChatMessage";
 
 interface Message {
-  sender: "user" | "bot";
+  sender: "medic" | "patient";
   name: string;
   text: string;
 }
@@ -13,43 +15,73 @@ interface ChatBoxProps {
   title?: string;
   placeholder?: string;
   style?: React.CSSProperties;
+  session_id: string;
+  role: "medic" | "patient"; // current user role
+  patient_id?: string;
 }
 
 const ChatBox: React.FC<ChatBoxProps> = ({
   title = "Chat",
   placeholder = "Digite sua mensagem...",
   style,
+  session_id,
+  role,
+  patient_id,
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const messagesEndRef = useRef<HTMLDivElement>(null); // 🔹 referência para o fim do chat
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const socketRef = useRef<Socket | null>(null);
 
+  // Initialize socket once
+  useEffect(() => {
+    socketRef.current = io("http://localhost:3001");
+
+    socketRef.current.emit("join_room", {
+      hash: session_id,
+      role,
+      patient_id,
+    });
+
+    socketRef.current.on(
+      "chat_message",
+      (data: { role: "medic" | "patient"; content: string }) => {
+        setMessages((prev) => [
+          ...prev,
+          {
+            sender: data.role,
+            name: data.role === "medic" ? "Médico" : "Paciente",
+            text: data.content,
+          },
+        ]);
+      }
+    );
+
+    return () => {
+      socketRef.current?.disconnect();
+    };
+  }, [session_id, role, patient_id]);
+
+  // Send a message
   const sendMessage = () => {
     if (!input.trim()) return;
 
     const userMessage: Message = {
-      sender: "user",
-      name: "Oruam",
+      sender: role, // current user role
+      name: "Você",
       text: input,
     };
 
     setMessages((prev) => [...prev, userMessage]);
-    setInput("");
 
-    // Simula resposta automática do bot
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          sender: "bot",
-          name: "Médico",
-          text: "Essa é uma resposta automática :)",
-        },
-      ]);
-    }, 800);
+    socketRef.current?.emit("chat_message", {
+      hash: session_id,
+      content: input,
+    });
+
+    setInput("");
   };
 
-  // 🔹 envia mensagem ao apertar Enter
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -57,81 +89,80 @@ const ChatBox: React.FC<ChatBoxProps> = ({
     }
   };
 
-  // 🔹 mantém o scroll sempre no fim
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   return (
     <div
-  style={{
-    display: "flex",
-    flexDirection: "column",
-    border: "1px solid #ddd",
-    borderRadius: "10px",
-    padding: "1rem",
-    backgroundColor: "#fafafa",
-    height: "100%", // ocupa toda a altura do container pai
-    ...style,
-  }}
->
-  {title && (
-    <h2 style={{ color: "black", fontWeight: 600, marginBottom: "0.5rem" }}>
-      {title}
-    </h2>
-  )}
-
-  {/* Área das mensagens */}
-  <div
-    style={{
-      flex: 1,          // ocupa todo o espaço disponível vertical
-      overflowY: "auto",
-      padding: "0.5rem",
-      backgroundColor: "#fff",
-      borderRadius: "8px",
-    }}
-  >
-    {messages.map((msg, idx) => (
-      <ChatMessage
-        key={idx}
-        sender={msg.sender}
-        name={msg.name}
-        text={msg.text}
-      />
-    ))}
-    <div ref={messagesEndRef} />
-  </div>
-
-  {/* Campo de texto + botão */}
-  <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
-    <input
-      type="text"
-      value={input}
-      onChange={(e) => setInput(e.target.value)}
-      onKeyDown={handleKeyDown}
-      placeholder={placeholder}
       style={{
-        flex: 1,
-        border: "1px solid #ccc",
-        borderRadius: "5px",
-        padding: "0.5rem",
-        color: "black",
-      }}
-    />
-    <button
-      onClick={sendMessage}
-      style={{
-        backgroundColor: "#3b82f6",
-        color: "white",
-        borderRadius: "5px",
-        padding: "0.5rem 1rem",
+        display: "flex",
+        flexDirection: "column",
+        border: "1px solid #ddd",
+        borderRadius: "10px",
+        padding: "1rem",
+        backgroundColor: "#fafafa",
+        height: "100%",
+        ...style,
       }}
     >
-      Enviar
-    </button>
-  </div>
-</div>
+      {title && (
+        <h2 style={{ color: "black", fontWeight: 600, marginBottom: "0.5rem" }}>
+          {title}
+        </h2>
+      )}
 
+      {/* Chat messages area */}
+      <div
+        style={{
+          flex: 1,
+          overflowY: "auto",
+          padding: "0.5rem",
+          backgroundColor: "#fff",
+          borderRadius: "8px",
+        }}
+      >
+        {messages.map((msg, idx) => (
+          <ChatMessage
+            key={idx}
+            sender={msg.sender}
+            name={msg.name}
+            text={msg.text}
+            currentUserRole={role} // pass current user role
+          />
+        ))}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input field + button */}
+      <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          style={{
+            flex: 1,
+            border: "1px solid #ccc",
+            borderRadius: "5px",
+            padding: "0.5rem",
+            color: "black",
+          }}
+        />
+        <button
+          onClick={sendMessage}
+          style={{
+            backgroundColor: "#3b82f6",
+            color: "white",
+            borderRadius: "5px",
+            padding: "0.5rem 1rem",
+          }}
+        >
+          Enviar
+        </button>
+      </div>
+    </div>
   );
 };
 
