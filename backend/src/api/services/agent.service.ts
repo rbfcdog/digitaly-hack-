@@ -25,21 +25,11 @@ export class AgentService {
 
     const patientInfoText = JSON.stringify(patient_info, null, 2);
 
-    console.log("Patient info:", patientInfoText);
-
-    const completion = await openai.chat.completions.create({
-      model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
-      temperature: 0.3,
-      messages: [
-        {
-          role: 'system',
-          content: `Você é um assistente médico especializado que analisa conversas entre médico e paciente.
+    const systemPrompt = `Você é um assistente médico especializado que analisa conversas entre médico e paciente.
 Use **todas as informações disponíveis do paciente** (como idade, sexo, diagnóstico, histórico de tratamentos, datas de consultas, tipo de câncer, estágio, etc.) e **todas as mensagens trocadas** para gerar um relatório completo.
-Retorne sempre um JSON válido.`
-        },
-        {
-          role: 'user',
-          content: `
+Retorne sempre um JSON válido.`;
+
+    const userPrompt = `
 Informações do paciente:
 ${patientInfoText}
 
@@ -48,10 +38,13 @@ Analise cuidadosamente estas informações e a conversa abaixo. Gere conclusões
 - Observações importantes para o acompanhamento
 - Sugestão de plano de ação
 
-Além disso, indique **quais dados recebidos (tanto mensagens quanto informações do paciente) foram mais importantes para chegar a estas conclusões**. 
-Liste essas informações em um campo chamado "important_info".
-Deve constar exatamente as mensagens que foram mais relevantes da forma em que foram escritas, além de informações do paciente (somente as relevantes, como o tipo de cancer, ).
-NÂO inclua informações irrelevantes ou que não contribuíram para a análise, como patient_id, nome, idade, etc, conste apenas tipo de cancer.
+Além disso, indique **quais mensagens foram mais importantes para chegar a estas conclusões**. 
+Liste essas informações em um campo chamado "important_info", da MESMA FORMA em que elas foram mandadas pelo paciente.
+Mostre apenas as mensagens do paciente que contribuíram para a análise, que realmente mostram condições dele, não inclua mensagens do médico.
+
+
+Atualize sempre as suas respostas com base com mudancas no comportamento do paciente, caso ele apresente novos sintomas ou relate novas informações ou fale que outros sintomas ja existentes mudaram.
+Caso ele fale que tenha falta de fome e depois que não tem mais, atualize a resposta removendo este sintoma.
 
 Conversa:
 """
@@ -66,7 +59,21 @@ Retorne um JSON no seguinte formato estrito:
   "observacoes": "...",
   "sugestao_plano": "...",
   "important_info": ["..."] 
-}`
+}`;
+
+    console.log('User Prompt:', userPrompt); // Debugging line
+
+    const completion = await openai.chat.completions.create({
+      model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+      temperature: 0.3,
+      messages: [
+        {
+          role: 'system',
+          content: systemPrompt,
+        },
+        {
+          role: 'user',
+          content: userPrompt,
         }
       ],
       response_format: {

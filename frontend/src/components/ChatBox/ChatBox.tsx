@@ -6,6 +6,7 @@ import { io, Socket } from "socket.io-client";
 import ChatMessage from "./ChatMessage";
 import { insertMessage } from "@/services/dbService";
 import { NewMessage } from "@/types";
+import { on } from "events";
 
 interface Message {
   sender: "medic" | "patient";
@@ -47,24 +48,40 @@ const ChatBox: React.FC<ChatBoxProps> = ({
       patient_id,
     });
 
+    const handleRecieveMessage = (data: { role: "medic" | "patient"; content: string }) => {
+      setMessages((prev) => [
+        ...prev,
+        {
+          sender: data.role,
+          name: data.role === "medic" ? "Médico" : "Paciente",
+          text: data.content,
+        },
+      ]);
+
+      try {
+        if (onMessageTrigger) {
+          onMessageTrigger();
+        }
+      } catch (err) {
+        // ensure listener doesn't crash due to parent callback error
+        console.error("Error in onMessageTrigger:", err);
+      }
+    };
+
     socketRef.current.on(
       "chat_message",
-      (data: { role: "medic" | "patient"; content: string }) => {
-        setMessages((prev) => [
-          ...prev,
-          {
-            sender: data.role,
-            name: data.role === "medic" ? "Médico" : "Paciente",
-            text: data.content,
-          },
-        ]);
-      }
+      handleRecieveMessage
     );
 
-    if (onMessageTrigger) onMessageTrigger();
+    if (onMessageTrigger) {
+      onMessageTrigger();
+    }
 
     return () => {
-      socketRef.current?.disconnect();
+      if (socketRef.current) {
+        socketRef.current.off("chat_message", handleRecieveMessage);
+        socketRef.current.disconnect();
+      }
     };
   }, [session_id, role, patient_id]);
 
@@ -93,6 +110,8 @@ const ChatBox: React.FC<ChatBoxProps> = ({
     };
     
     insertMessage(message)
+
+    if (onMessageTrigger) onMessageTrigger();
 
     setInput("");
   };
