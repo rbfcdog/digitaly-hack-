@@ -1,10 +1,18 @@
+"use client";
+
 import ChatBox from "@/components/ChatBox/ChatBox";
 import InfoBox from "@/components/InfoBox/InfoBox";
 import HeaderBar from "@/components/HeaderBar/Headerbar";
-import React from "react";
+import Notification from "@/components/Notification/notification";
+import React, {useState, useEffect} from "react";
 
 export default function MedicoPage() {
   const headerHeight = 60;
+  const [notifMessage, setNotifMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    setNotifMessage("Bem-vindo ao atendimento virtual!");
+  }, []);
 
   return (
     <div
@@ -18,6 +26,14 @@ export default function MedicoPage() {
     >
       {/* HEADER */}
       <HeaderBar height={headerHeight} />
+
+       {/* Notification */}
+       <Notification
+        message={notifMessage || ""}
+        duration={3000}
+        visible={!!notifMessage}
+        onClose={() => setNotifMessage(null)}
+      />
 
       {/* CONTEÚDO PRINCIPAL */}
       <div
