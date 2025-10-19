@@ -85,7 +85,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
   }, [session_id, role, patient_id]);
 
   // Send a message
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (!input.trim()) return;
 
     const message : NewMessage = {
@@ -95,7 +95,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
       message: input,
     };
     
-    insertMessage(message)
+    await insertMessage(message)
 
     const userMessage: Message = {
       sender: role, // current user role

@@ -204,21 +204,23 @@ const patientsAge = separateAgeGroups("idade");
       />
 
       {/* Notificação de boas-vindas */}
-      <Notification
-        message={notifMessage || ""}
-        visible={!!notifMessage}
-        duration={10000}
-        color="green"
-        offsetY={20}
-        onClose={() => setNotifMessage(null)}
-      />
+      {!consultaAtrasadaMsg && (
+        <Notification
+          message={notifMessage || ""}
+          visible={!!notifMessage}
+          duration={3000}
+          color="green"
+          offsetY={20}
+          onClose={() => setNotifMessage(null)}
+        />
+      )}
 
       {/* 🔴 Notificação de consulta atrasada */}
       {consultaAtrasadaMsg && (
         <Notification
           message={consultaAtrasadaMsg}
           visible={true}
-          duration={15000}
+          duration={10000}
           color="red"
           offsetY={70}
           onClose={() => setConsultaAtrasadaMsg(null)}

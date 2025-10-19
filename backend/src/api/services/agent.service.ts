@@ -41,6 +41,8 @@ Analise cuidadosamente estas informações e a conversa abaixo. Gere conclusões
 - Sugestão de plano de ação considerando histórico e tipo de câncer
 - Alertas de risco com nível de alerta, o alerta deve ser medido em relação ao tipo de câncer e histórico do paciente, qualquer informação relevante deve ser considerada
 
+Escreva com a primeira letra da palavra inicial em maiúscula.
+
 Conversa:
 """
 ${combinedText}

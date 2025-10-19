@@ -297,7 +297,7 @@ const DashboardModal: React.FC<DashboardModalProps> = ({
           {/* Status da Jornada */}
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: "400px" }}>
             <h3 style={{ marginBottom: "1rem", color: "#000" }}>Status da Jornada</h3>
-            <BarChart width={500} height={300} data={statusJornadaForChart}>
+            <BarChart width={550} height={300} data={statusJornadaForChart}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" tick={{ fill: "#000" }} />
               <YAxis tick={{ fill: "#000" }} />
@@ -315,20 +315,6 @@ const DashboardModal: React.FC<DashboardModalProps> = ({
               />
               <Bar dataKey="value" fill="#3b82f6" />
             </BarChart>
-          </div>
-
-          {/* Idade */}
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: "300px" }}>
-            <h3 style={{ marginBottom: "1rem", color: "#000" }}>Idade</h3>
-            <PieChart width={450} height={300}>
-              <Pie data={patientsAgeForChart} dataKey="value" nameKey="name" cx="40%" cy="50%" outerRadius={100} label>
-                {patientsAgeForChart.map((_, i) => (
-                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-              <Legend layout="vertical" align="right" verticalAlign="middle" />
-            </PieChart>
           </div>
         </div>
       </div>
