@@ -79,6 +79,21 @@ static createSession(req: Request, res: Response) {
       res.status(500).json({ error: error.message });
     }
   }
+
+  static async agentConversation(req: Request, res: Response) {
+    try {
+      const { patient_id } = req.body;
+
+      const messages = await supabaseService.queryAllClientMessages(patient_id);
+      const patient_info = await supabaseService.queryClientInfo(patient_id);
+      const analysis = await agentService.analyzePatientConversation(messages, patient_info);
+      
+      res.status(200).json(analysis);
+    } catch (error: any) {
+      console.error("Erro na conversa do agente:", error.message);
+      res.status(500).json({ error: error.message });
+    }
+  }
 }
 
 

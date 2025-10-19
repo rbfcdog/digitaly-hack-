@@ -57,20 +57,6 @@ io.on("connection", (socket) => {
         s.emit("chat_message", { role, content: data.content });
       }
     });
-
-    // Agent analysis for medic
-    try {
-      const analysis = await agentService.analyzePatientConversation(
-        SessionsManager.getPatientId(hash),
-        messageHistory[hash]
-      );
-
-      socketsInRoom.forEach((s) => {
-        if (s.data.role === "medic") s.emit("agent_analysis", analysis);
-      });
-    } catch (err) {
-      console.error("Erro ao analisar conversa:", err);
-    }
   });
 
   socket.on("disconnect", () => {

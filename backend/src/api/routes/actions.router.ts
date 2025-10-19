@@ -12,4 +12,6 @@ router.post("/insert-message", ActionsController.insertMessage);
 router.post("/query-all-client-messages", ActionsController.queryAllClientMessages);
 router.post("/query-session-client-messages", ActionsController.querySessionClientMessages);
 
+router.post("/agent-conversation", ActionsController.agentConversation);
+
 export default router;

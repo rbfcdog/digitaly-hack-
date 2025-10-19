@@ -1,12 +1,12 @@
 import { api } from "@/services/api"
 import { AxiosResponse } from "axios"
-import { ClientInfo } from "@/types"
+import { ClientInfo, NewMessage, Message, PatientAnalysis } from "@/types"
 
-export async function queryClientInfo(clientId: string): Promise<AxiosResponse<ClientInfo>> {
+export async function agentConversation(patient_id: string): Promise<AxiosResponse<PatientAnalysis>> {
   try {
-    const body = { clientId }
+    const body = { patient_id }
     console.log(body)
-    const res = await api.post<ClientInfo>("api/actions/query-client-info", body)
+    const res = await api.post<PatientAnalysis>("api/actions/agent-conversation", body)
     console.log(res)
     return res
   } catch (error) {

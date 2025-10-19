@@ -1,20 +1,40 @@
 "use client";
 
+import React, { useState } from "react";
 import ChatBox from "@/components/ChatBox/ChatBox";
 import InfoBox from "@/components/InfoBox/InfoBox";
 import HeaderBar from "@/components/HeaderBar/Headerbar";
 import { useSearchParams } from "next/navigation";
-import React from "react";
+
+import { agentConversation } from "@/services/agentService";
 
 export default function MedicoPage() {
   const headerHeight = 60;
   const searchParams = useSearchParams();
 
-  // Get parameters from URL
+  // URL parameters
   const session_id = searchParams.get("session") || "";
   const role = "medic";
   const patient_id = searchParams.get("id") || undefined;
 
+  // Example state to show the trigger in action
+  const [lastTrigger, setLastTrigger] = useState<Date | null>(null);
+
+  const handleMessageTrigger = async () => {
+    console.log("💬 Novo evento de mensagem recebido!");
+    setLastTrigger(new Date());
+
+    try {
+      // Wait for your analysis result
+      const analysis = await agentConversation(patient_id!);
+
+      // analysis is a typed object — stringify it for clarity
+      console.log("🧠 Analysis result:", JSON.stringify(analysis, null, 2));
+    } catch (error) {
+      console.error("❌ Error while analyzing conversation:", error);
+    }
+  };
+  
   return (
     <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
       {/* HEADER */}
@@ -61,9 +81,17 @@ export default function MedicoPage() {
             content={`Solicitar exames laboratoriais; monitorar sintomas; prescrever medicamento X se necessário.`}
             style={{ flex: 1, overflowY: "auto" }}
           />
+          {/* Mostra o último trigger como exemplo */}
+          {lastTrigger && (
+            <InfoBox
+              title="Último Trigger"
+              content={`Última mensagem recebida em: ${lastTrigger.toLocaleTimeString()}`}
+              style={{ flex: 0.5, overflowY: "auto" }}
+            />
+          )}
         </div>
 
-        {/* LADO DIREITO */}
+        {/* LADO DIREITO (CHAT) */}
         <div
           style={{
             width: "50%",
@@ -74,6 +102,10 @@ export default function MedicoPage() {
         >
           <ChatBox
             title="Atendimento Virtual"
+            session_id={session_id}
+            role={role}
+            patient_id={patient_id}
+            onMessageTrigger={handleMessageTrigger} // 🔥 Trigger callback
             style={{
               height: "98%",
               display: "flex",
@@ -81,11 +113,8 @@ export default function MedicoPage() {
               border: "1px solid #ddd",
               borderRadius: "10px",
               padding: "0.5rem",
-              backgroundColor: "#fafafa",                                                                                                                                                                               
+              backgroundColor: "#fafafa",
             }}
-            session_id={session_id}
-            role={role}
-            patient_id={patient_id}                                                                                                                                                                                                                                                                               
           />
         </div>
       </div>

@@ -4,6 +4,8 @@ import React, { useState, useRef, useEffect } from "react";
 import { io, Socket } from "socket.io-client";
 
 import ChatMessage from "./ChatMessage";
+import { insertMessage } from "@/services/dbService";
+import { NewMessage } from "@/types";
 
 interface Message {
   sender: "medic" | "patient";
@@ -18,6 +20,7 @@ interface ChatBoxProps {
   session_id: string;
   role: "medic" | "patient"; // current user role
   patient_id?: string;
+  onMessageTrigger?: () => void; // <- nova prop
 }
 
 const ChatBox: React.FC<ChatBoxProps> = ({
@@ -27,6 +30,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
   session_id,
   role,
   patient_id,
+  onMessageTrigger, 
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -57,6 +61,8 @@ const ChatBox: React.FC<ChatBoxProps> = ({
       }
     );
 
+    if (onMessageTrigger) onMessageTrigger();
+
     return () => {
       socketRef.current?.disconnect();
     };
@@ -78,6 +84,15 @@ const ChatBox: React.FC<ChatBoxProps> = ({
       hash: session_id,
       content: input,
     });
+
+    const message : NewMessage = {
+      session_id: session_id,
+      sender_role: role === "medic" ? "doctor" : "patient",
+      patient_id: patient_id || "",
+      message: input,
+    };
+    
+    insertMessage(message)
 
     setInput("");
   };

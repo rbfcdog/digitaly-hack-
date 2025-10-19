@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import OpenAI from 'openai';
 import { z } from 'zod';
-import type { PatientAnalysis } from '../../types/index.js';
+import type { PatientAnalysis, ClientInfo, Message } from '../../types/index.js';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -14,10 +14,14 @@ export const PatientAnalysisSchema = z.object({
 
 export class AgentService {
   static async analyzePatientConversation(
-    patient_id: string,
-    messages: { role: string; content: string }[]
+    messages: Message[],
+    patient_info: ClientInfo
   ): Promise<PatientAnalysis> {
-    const combinedText = messages.map((m) => `${m.role.toUpperCase()}: ${m.content}`).join('\n');
+    const combinedText = messages.map((m) => `${m.sender_role.toUpperCase()}: ${m.message}`).join('\n');
+
+    const patientInfoText = JSON.stringify(patient_info, null, 2);
+
+    console.log(patientInfoText);
 
     const completion = await openai.chat.completions.create({
       model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
@@ -31,10 +35,13 @@ Retorne sempre um JSON válido com sintomas, observações e plano de ação.`,
         {
           role: 'user',
           content: `
-Analise a conversa abaixo e gere um JSON de acordo com o schema:
+Informações do paciente:
+${patientInfoText}
+
+Analise as informações e a conversa abaixo e gere um JSON de acordo com o schema:
 
 {
-  "patient_id": "${patient_id}",
+  "patient_id": "...",
   "sintomas": [...],
   "observacoes": "...",
   "sugestao_plano": "..."

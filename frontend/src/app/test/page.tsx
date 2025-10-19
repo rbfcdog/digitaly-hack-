@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { queryClientInfo } from "@/services/agentService";
+import { queryClientInfo } from "@/services/dbService";
 import { ClientInfo } from "@/types";
 
 
